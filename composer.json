@@ -1,5 +1,5 @@
 {
-  "name" : "lansoweb/api-client",
+  "name" : "los/api-client",
   "description" : "REST API Client using Hal",
   "require" : {
     "php": "^7.1",
