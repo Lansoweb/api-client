@@ -1,0 +1,18 @@
+<?php
+return [
+    'los' => [
+        'api-client' => [
+            'root_uri' => 'http://localhost:8000',
+            'add_request_id' => true,
+            'add_request_time' => true,
+            'add_request_depth' => true,
+            'headers' => [
+                'Accept'       => 'application/hal+json',
+                'Content-Type' => 'application/json',
+            ],
+            'query' => [
+                'key' => '123',
+            ],
+        ],
+    ],
+];
