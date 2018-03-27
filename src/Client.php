@@ -13,6 +13,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\UriInterface;
 use Ramsey\Uuid\Uuid;
 use Zend\EventManager\EventManagerAwareTrait;
+use Zend\Expressive\Hal\ResourceGenerator;
 
 final class Client
 {
@@ -26,6 +27,9 @@ final class Client
 
     /** @var RequestInterface */
     private $defaultRequest;
+
+    /** @var ResourceGenerator */
+    private $resourceGenerator;
 
     /**
      * Extra information. Provided by the client
@@ -43,14 +47,18 @@ final class Client
     /**
      * Client constructor.
      * @param string|UriInterface $rootUrl
+     * @param ResourceGenerator $resourceGenerator
      * @param HttpClientInterface|null $httpClient
      * @param array $options
      */
     public function __construct(
         $rootUrl,
+        ResourceGenerator $resourceGenerator,
         HttpClientInterface $httpClient = null,
         $options = []
     ) {
+        $this->resourceGenerator = $resourceGenerator;
+
         $this->httpClient = $httpClient ?: new Guzzle6HttpClient();
 
         $this->defaultOptions = $options;
@@ -343,7 +351,33 @@ final class Client
         $statusCode = $response->getStatusCode();
 
         if ($statusCode >= 200 && $statusCode < 300) {
-            return ApiResource::fromResponse($response);
+            try {
+                $body = $response->getBody()->getContents();
+            } catch (\Throwable $e) {
+                throw new Exception\BadResponseException(
+                    sprintf(
+                        'Error getting response body: %s.',
+                        $e->getMessage()
+                    ),
+                    $response,
+                    $e
+                );
+            }
+
+            $data = json_decode($body, true);
+
+            if (JSON_ERROR_NONE !== json_last_error()) {
+                throw new Exception\BadResponseException(
+                    sprintf(
+                        'JSON parse error: %s.',
+                        self::getLastJsonError()
+                    ),
+                    $response
+                );
+            }
+
+            return $this->resourceGenerator->fromArray($data);
+//            return ApiResource::fromResponse($response);
         }
 
         throw Exception\BadResponseException::create($response);
