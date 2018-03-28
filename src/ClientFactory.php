@@ -2,6 +2,7 @@
 namespace Los\ApiClient;
 
 use Psr\Container\ContainerInterface;
+use Zend\Expressive\Hal\ResourceGenerator;
 
 class ClientFactory
 {
@@ -20,6 +21,11 @@ class ClientFactory
 
         $clientConfig = $config['los']['api-client'] ?? [];
 
-        return new Client($clientConfig['root_url'] ?? [], null, $clientConfig);
+        return new Client(
+            $clientConfig['root_url'] ?? '',
+            $container->get(ResourceGenerator::class),
+            new HttpClient\Guzzle6HttpClient(),
+            $clientConfig
+        );
     }
 }

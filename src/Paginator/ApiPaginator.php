@@ -10,9 +10,9 @@ class ApiPaginator implements AdapterInterface
     private $query;
     private $collectionName;
 
-    private $data;
+    private $resource;
 
-    public function __construct(Client $apiClient, $url, $collectionName, $query)
+    public function __construct(Client $apiClient, string $url, string $collectionName, string $query = '')
     {
         $this->client = $apiClient;
         $this->url = $url;
@@ -26,16 +26,19 @@ class ApiPaginator implements AdapterInterface
      *
      * @see \Zend\Paginator\Adapter\AdapterInterface::getItems()
      */
-    public function getItems($offset, $itemCountPerPage)
+    public function getItems($offset, $itemCountPerPage) : array
     {
-        if ($this->data == null) {
-            $ret = $this->client->get($this->url, $this->query);
-            $this->data = $ret->getData();
+        if ($this->resource == null) {
+            $this->resource = $this->client->get($this->url, $this->query);
         }
-        if (! isset($this->data[$this->collectionName])) {
+
+        $data = $this->resource->getElement($this->collectionName);
+
+        if ($data === null) {
             return [];
         }
-        return $this->data[$this->collectionName];
+
+        return $data;
     }
 
     /**
@@ -44,10 +47,15 @@ class ApiPaginator implements AdapterInterface
      */
     public function count($mode = null)
     {
-        if ($this->data == null) {
-            $ret = $this->client->get($this->url, $this->query);
-            $this->data = $ret->getData();
+        if ($this->resource == null) {
+            $this->resource = $this->client->get($this->url, $this->query);
         }
-        return (int) ($this->data['_total_items'] ?? $this->data['total_items'] ?? 0);
+
+        $count = $this->resource->getElement('_total_items') ?? $this->resource->getElement('total_items');
+        if ($count === null) {
+            throw new Exception\MissingElementException('Total items element not found in response.');
+        }
+
+        return (int) $count;
     }
 }

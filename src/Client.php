@@ -31,6 +31,12 @@ final class Client
     /** @var ResourceGenerator */
     private $resourceGenerator;
 
+    /** @var bool */
+    private $httpErrors = true;
+
+    /** @var ResponseInterface */
+    private $response;
+
     /**
      * Extra information. Provided by the client
      * @var mixed
@@ -68,8 +74,8 @@ final class Client
             $rootUrl,
             array_merge_recursive(
                 [
-                'User-Agent' => get_class($this),
-                'Accept'     => implode(', ', self::$validContentTypes)
+                    'User-Agent' => get_class($this),
+                    'Accept'     => implode(', ', self::$validContentTypes)
                 ],
                 $this->defaultOptions['headers'] ?? []
             )
@@ -217,6 +223,7 @@ final class Client
         $this->getEventManager()->trigger('request.pre', $this);
 
         try {
+
             $requestTime = microtime(true);
 
             $response = $this->httpClient->send($request);
@@ -226,18 +233,27 @@ final class Client
 
                 $response = $this->addResponseTime($response, $responseTime);
             }
+
         } catch (GuzzleException\ConnectException $e) {
+
             $this->getEventManager()->trigger('request.fail', $this, $e);
-            throw Exception\RequestException::fromRequest($request);
+            throw Exception\RequestException::fromRequest($request, $e);
+
         } catch (GuzzleException\ClientException $e) {
+
             $this->getEventManager()->trigger('request.fail', $this, $e);
-            throw Exception\ClientException::fromRequest($request);
+            throw Exception\ClientException::fromRequest($request, $e);
+
         } catch (GuzzleException\ServerException $e) {
+
             $this->getEventManager()->trigger('request.fail', $this, $e);
-            throw Exception\ServerException::fromRequest($request);
+            throw Exception\ServerException::fromRequest($request, $e);
+
         } catch (\Throwable $e) {
+
             $this->getEventManager()->trigger('request.fail', $this, $e);
-            throw new Exception\RuntimeException();
+            throw new Exception\RuntimeException($e->getMessage(), 500, $e);
+
         }
 
         $this->getEventManager()->trigger('request.post', $this);
@@ -295,6 +311,8 @@ final class Client
             $request = $this->incrementRequestDepth($request);
         }
 
+        $this->httpErrors = (bool) ($options['http_errors'] ?? true);
+
         return $request;
     }
 
@@ -343,44 +361,23 @@ final class Client
 
     /**
      * @param ResponseInterface $response
-     * @return ApiResource
+     * @return ApiResource|null
      * @throws Exception\BadResponseException
      */
-    private function handleResponse(ResponseInterface $response)
+    private function handleResponse(ResponseInterface $response) : ?ApiResource
     {
         $statusCode = $response->getStatusCode();
+        $this->response = $response;
 
         if ($statusCode >= 200 && $statusCode < 300) {
-            try {
-                $body = $response->getBody()->getContents();
-            } catch (\Throwable $e) {
-                throw new Exception\BadResponseException(
-                    sprintf(
-                        'Error getting response body: %s.',
-                        $e->getMessage()
-                    ),
-                    $response,
-                    $e
-                );
-            }
-
-            $data = json_decode($body, true);
-
-            if (JSON_ERROR_NONE !== json_last_error()) {
-                throw new Exception\BadResponseException(
-                    sprintf(
-                        'JSON parse error: %s.',
-                        self::getLastJsonError()
-                    ),
-                    $response
-                );
-            }
-
-            return $this->resourceGenerator->fromArray($data);
-//            return ApiResource::fromResponse($response);
+            return ApiResource::fromResponse($response);
         }
 
-        throw Exception\BadResponseException::create($response);
+        if ($this->httpErrors) {
+            throw Exception\BadResponseException::create($response);
+        }
+
+        return ApiResource::fromResponse($response);
     }
 
     /**
@@ -497,5 +494,13 @@ final class Client
     {
         $this->extra = $extra;
         return $this;
+    }
+
+    /**
+     * @return ResponseInterface
+     */
+    public function response(): ?ResponseInterface
+    {
+        return $this->response;
     }
 }
