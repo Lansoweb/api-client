@@ -8,6 +8,7 @@ use Zend\Expressive\Hal\HalResource;
 
 final class ApiResource extends HalResource
 {
+    private $isErrorResource = false;
 
     /**
      * @param ResponseInterface $response
@@ -41,11 +42,65 @@ final class ApiResource extends HalResource
             );
         }
 
-        $links = $data['_links'] ?? [];
-        $embedded = $data['_embedded'] ?? [];
+        $links = [];
+        $embedded = [];
+
+        $linksData = $data['_links'] ?? [];
+        $embeddedData = $data['_embedded'] ?? [];
         unset($data['_links'], $data['_embedded']);
 
-        return new self($data, $links, $embedded);
+        foreach ($linksData as $relation => $linkData) {
+            $links[] = new Link($relation, $linkData['href']);
+        }
+
+        if (empty($embeddedData)) {
+            return new self($data, $links);
+        }
+
+        $embeddedName = '';
+
+        foreach ($embeddedData as $name => $list) {
+            $embeddedName = $name;
+            foreach ($list as $tok) {
+                $halLinks = [];
+                if (array_key_exists('_links', $tok)) {
+                    foreach ($tok['_links'] as $relation => $linkData) {
+                        $halLinks[] = new Link($relation, $linkData['href']);
+                    }
+                }
+                unset($tok['_links'], $tok['_embedded']);
+                $embedded[] = new self($tok, $halLinks);
+            }
+        }
+
+        if (empty($embeddedName)) {
+            return new self($data, $links);
+        }
+
+        $resource = new self($data, $links, [$embeddedName => $embedded]);
+
+        if ($response->getStatusCode() < 200 || $response->getStatusCode() >= 400) {
+            $resource->isErrorResource = true;
+        }
+
+        return $resource;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isErrorResource(): bool
+    {
+        return $this->isErrorResource;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isCollection() : bool
+    {
+        $page = $this->getElement('_page') ?? $this->getElement('page');
+        return $page !== null;
     }
 
     /**
@@ -70,16 +125,37 @@ final class ApiResource extends HalResource
 
     /**
      * @return int|null
+     * @throws Exception\MissingElementException
      */
-    public function getTotalItems() : ?int
+    public function getTotalItems() : int
     {
         $count = $this->getElement('_total_items') ?? $this->getElement('total_items');
 
         if ($count === null) {
-            return null;
+            throw new Exception\MissingElementException('Total items element not found in response.');
         }
 
         return (int) $count;
+    }
+
+    /**
+     * @param $name
+     * @return mixed
+     * @throws Exception\MissingElementException
+     */
+    public function getFirstResource($name)
+    {
+        $element = $this->getElement($name);
+
+        if ($element === null) {
+            throw new Exception\MissingElementException("Element with name '$name' not found in response.");
+        }
+
+        if (! is_array($element) || empty($element)) {
+            return $element;
+        }
+
+        return $element[0];
     }
 
     /**
