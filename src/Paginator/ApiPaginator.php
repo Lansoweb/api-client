@@ -12,7 +12,7 @@ class ApiPaginator implements AdapterInterface
 
     private $resource;
 
-    public function __construct(Client $apiClient, string $url, string $collectionName, string $query = '')
+    public function __construct(ApiClient $apiClient, string $url, string $collectionName, string $query = '')
     {
         $this->client = $apiClient;
         $this->url = $url;
