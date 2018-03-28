@@ -42,15 +42,15 @@ Copy the los-api-client.global.php.dist from this module to your application's c
 ### Creating the client
 You can use the `Los\ApiClient\ClientFactory` using the above configuration or manually:
 ```php
-$client = new \Los\Api\Client('http://api.example.com');
+$client = new \Los\ApiClient\ApiClient('http://api.example.com');
 ```
 
 ### Single resource
 ```php
-/* @var \Los\Api\Client $client */
-$client = new \Los\Api\Client('http://api.example.com');
+/* @var \Los\ApiClient\ApiClient $client */
+$client = new \Los\ApiClient\ApiClient('http://api.example.com');
 
-/* @var \Los\Api\Resource\ApiResource $ret */
+/* @var \Los\ApiClient\Resource\ApiResource $ret */
 $ret = $client->get('/album/1');
 
 // $data is an array with all data and resources (_embedded) from the response
@@ -59,10 +59,10 @@ $data = $ret->getData();
 
 ### Collection
 ```php
-/* @var \Los\Api\Client $client */
-$client = new \Los\Api\Client('http://api.example.com');
+/* @var \Los\ApiClient\ApiClient $client */
+$client = new \Los\ApiClient\ApiClient('http://api.example.com');
 
-/* @var \Los\Api\Resource\ApiResource $ret */
+/* @var \Los\ApiClient\Resource\ApiResource $ret */
 $ret = $client->get('/album', [ 'query' => ['year' => 2018] ]);
 
 // $data is an array with all data and resources (_embedded) from the response

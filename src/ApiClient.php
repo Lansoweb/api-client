@@ -15,7 +15,7 @@ use Ramsey\Uuid\Uuid;
 use Zend\EventManager\EventManagerAwareTrait;
 use Zend\Expressive\Hal\ResourceGenerator;
 
-final class Client
+final class ApiClient
 {
     use EventManagerAwareTrait;
 
@@ -98,7 +98,7 @@ final class Client
 
     /**
      * @param string|UriInterface $rootUrl
-     * @return Client
+     * @return ApiClient
      */
     public function withRootUrl($rootUrl) : self
     {
@@ -121,7 +121,7 @@ final class Client
     /**
      * @param string $name
      * @param string|string[] $value
-     * @return Client
+     * @return ApiClient
      */
     public function withHeader($name, $value)
     {
@@ -488,7 +488,7 @@ final class Client
 
     /**
      * @param mixed $extra
-     * @return Client
+     * @return ApiClient
      */
     public function setExtra($extra) : self
     {
