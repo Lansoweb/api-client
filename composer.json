@@ -39,6 +39,11 @@
     "name" : "Leandro Silva",
     "email" : "leandro@leandrosilva.info"
   } ],
+  "extra": {
+    "zf": {
+      "config-provider": "ApiClient\\ConfigProvider"
+    }
+  },
   "scripts": {
     "check": [
       "@cs-check",
