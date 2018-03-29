@@ -11,7 +11,7 @@ return [
                 'Content-Type' => 'application/json',
             ],
             'query' => [
-                'key' => '123',
+                //'key' => '123',
             ],
         ],
     ],

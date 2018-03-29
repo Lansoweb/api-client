@@ -151,10 +151,10 @@ final class ApiClient
      * @param string|UriInterface $uri
      * @param array $options
      * @return ApiResource
+     * @throws Exception\BadResponseException
      * @throws Exception\ClientException
      * @throws Exception\RequestException
      * @throws Exception\ServerException
-     * @throws Exception\BadResponseException
      */
     public function post($uri, array $options = [])
     {
@@ -223,7 +223,6 @@ final class ApiClient
         $this->getEventManager()->trigger('request.pre', $this);
 
         try {
-
             $requestTime = microtime(true);
 
             $response = $this->httpClient->send($request);
@@ -233,27 +232,18 @@ final class ApiClient
 
                 $response = $this->addResponseTime($response, $responseTime);
             }
-
         } catch (GuzzleException\ConnectException $e) {
-
             $this->getEventManager()->trigger('request.fail', $this, $e);
             throw Exception\RequestException::fromRequest($request, $e);
-
         } catch (GuzzleException\ClientException $e) {
-
             $this->getEventManager()->trigger('request.fail', $this, $e);
             throw Exception\ClientException::fromRequest($request, $e);
-
         } catch (GuzzleException\ServerException $e) {
-
             $this->getEventManager()->trigger('request.fail', $this, $e);
             throw Exception\ServerException::fromRequest($request, $e);
-
         } catch (\Throwable $e) {
-
             $this->getEventManager()->trigger('request.fail', $this, $e);
             throw new Exception\RuntimeException($e->getMessage(), 500, $e);
-
         }
 
         $this->getEventManager()->trigger('request.post', $this);
@@ -369,11 +359,7 @@ final class ApiClient
         $statusCode = $response->getStatusCode();
         $this->response = $response;
 
-        if ($statusCode >= 200 && $statusCode < 300) {
-            return ApiResource::fromResponse($response);
-        }
-
-        if ($this->httpErrors) {
+        if ($this->httpErrors && ($statusCode < 200 || $statusCode >= 400)) {
             throw Exception\BadResponseException::create($response);
         }
 
