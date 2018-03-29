@@ -54,7 +54,7 @@ final class ApiResource extends HalResource
         }
 
         if (empty($embeddedData)) {
-            return new self($data, $links);
+            return static::fromData($data, $links, [], $response);
         }
 
         $embeddedName = '';
@@ -74,15 +74,29 @@ final class ApiResource extends HalResource
         }
 
         if (empty($embeddedName)) {
-            return new self($data, $links);
+            return static::fromData($data, $links, [], $response);
         }
 
-        $resource = new self($data, $links, [$embeddedName => $embedded]);
+        return static::fromData($data, $links, [$embeddedName => $embedded], $response);
+    }
 
-        if ($response->getStatusCode() < 200 || $response->getStatusCode() >= 400) {
+    /**
+     * @param array $data
+     * @param array $links
+     * @param array $embedded
+     * @param ResponseInterface|null $response
+     * @return ApiResource
+     */
+    public static function fromData(
+        array $data,
+        array $links = [],
+        array $embedded = [],
+        ResponseInterface $response = null
+    ) : self {
+        $resource = new self($data, $links, $embedded);
+        if ($response !== null && $response->getStatusCode() < 200 || $response->getStatusCode() >= 400) {
             $resource->isErrorResource = true;
         }
-
         return $resource;
     }
 
@@ -124,7 +138,7 @@ final class ApiResource extends HalResource
     }
 
     /**
-     * @return int|null
+     * @return int
      * @throws Exception\MissingElementException
      */
     public function getTotalItems() : int
@@ -139,11 +153,11 @@ final class ApiResource extends HalResource
     }
 
     /**
-     * @param $name
+     * @param string $name
      * @return mixed
      * @throws Exception\MissingElementException
      */
-    public function getFirstResource($name)
+    public function getFirstResource(string $name)
     {
         $element = $this->getElement($name);
 
