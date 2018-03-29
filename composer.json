@@ -41,7 +41,7 @@
   } ],
   "extra": {
     "zf": {
-      "config-provider": "ApiClient\\ConfigProvider"
+      "config-provider": "Los\\ApiClient\\ConfigProvider"
     }
   },
   "scripts": {

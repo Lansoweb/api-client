@@ -234,13 +234,13 @@ final class ApiClient
             }
         } catch (GuzzleException\ConnectException $e) {
             $this->getEventManager()->trigger('request.fail', $this, $e);
-            throw Exception\RequestException::fromRequest($request, $e);
+            throw Exception\RequestException::fromThrowable($e);
         } catch (GuzzleException\ClientException $e) {
             $this->getEventManager()->trigger('request.fail', $this, $e);
-            throw Exception\ClientException::fromRequest($request, $e);
+            throw Exception\ClientException::fromThrowable($e);
         } catch (GuzzleException\ServerException $e) {
             $this->getEventManager()->trigger('request.fail', $this, $e);
-            throw Exception\ServerException::fromRequest($request, $e);
+            throw Exception\ServerException::fromThrowable($e);
         } catch (\Throwable $e) {
             $this->getEventManager()->trigger('request.fail', $this, $e);
             throw new Exception\RuntimeException($e->getMessage(), 500, $e);

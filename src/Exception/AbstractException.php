@@ -2,11 +2,17 @@
 
 namespace Los\ApiClient\Exception;
 
-use Psr\Http\Message\RequestInterface;
+use Throwable;
 
 class AbstractException extends \Exception implements ExceptionInterface
 {
-    public static function fromRequest(RequestInterface $request, $previous = null, $message = null)
+    /**
+     * AbstractException constructor.
+     * @param string $message
+     * @param int $code
+     * @param Throwable|null $previous
+     */
+    public function __construct(string $message = '', int $code = 0, Throwable $previous = null)
     {
         if (! $message) {
             $message = 'Exception thrown by the http client while sending request.';
@@ -20,6 +26,6 @@ class AbstractException extends \Exception implements ExceptionInterface
             }
         }
 
-        return new self($message, $request, $previous);
+        parent::__construct($message, $code, $previous);
     }
 }
