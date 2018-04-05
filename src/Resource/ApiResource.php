@@ -128,7 +128,7 @@ final class ApiResource extends HalResource
             return false;
         }
 
-        $pageCount = $this->getElement('_page_count') ?? $this->getElement('_page_count');
+        $pageCount = $this->getElement('_page_count') ?? $this->getElement('page_count');
 
         if ($pageCount === null) {
             return false;
