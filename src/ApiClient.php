@@ -248,7 +248,7 @@ final class ApiClient
 
         $this->getEventManager()->trigger('request.post', $this);
 
-        return $this->handleResponse($response);
+        return $this->handleResponse($response, (bool) ($options['raw_response'] ?? false));
     }
 
     /**
@@ -351,16 +351,21 @@ final class ApiClient
 
     /**
      * @param ResponseInterface $response
+     * @param bool $rawResponse
      * @return ApiResource|null
      * @throws Exception\BadResponseException
      */
-    private function handleResponse(ResponseInterface $response) : ?ApiResource
+    private function handleResponse(ResponseInterface $response, bool $rawResponse) : ?ApiResource
     {
         $statusCode = $response->getStatusCode();
         $this->response = $response;
 
         if ($this->httpErrors && ($statusCode < 200 || $statusCode >= 400)) {
             throw Exception\BadResponseException::create($response);
+        }
+
+        if ($rawResponse) {
+            return null;
         }
 
         return ApiResource::fromResponse($response);
