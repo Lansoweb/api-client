@@ -15,7 +15,7 @@ use Ramsey\Uuid\Uuid;
 use Zend\EventManager\EventManagerAwareTrait;
 use Zend\Expressive\Hal\ResourceGenerator;
 
-final class ApiClient
+final class ApiClient implements ApiClientInterface
 {
     use EventManagerAwareTrait;
 
@@ -98,9 +98,9 @@ final class ApiClient
 
     /**
      * @param string|UriInterface $rootUrl
-     * @return ApiClient
+     * @return ApiClientInterface
      */
-    public function withRootUrl($rootUrl) : self
+    public function withRootUrl($rootUrl) : ApiClientInterface
     {
         $instance = clone $this;
 
@@ -121,9 +121,9 @@ final class ApiClient
     /**
      * @param string $name
      * @param string|string[] $value
-     * @return ApiClient
+     * @return ApiClientInterface
      */
-    public function withHeader($name, $value)
+    public function withHeader($name, $value) : ApiClientInterface
     {
         $instance = clone $this;
         $instance->defaultRequest = $instance->defaultRequest->withHeader(
@@ -479,9 +479,9 @@ final class ApiClient
 
     /**
      * @param mixed $extra
-     * @return ApiClient
+     * @return ApiClientInterface
      */
-    public function setExtra($extra) : self
+    public function setExtra($extra) : ApiClientInterface
     {
         $this->extra = $extra;
         return $this;
