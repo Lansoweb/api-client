@@ -502,4 +502,15 @@ final class ApiClient implements ApiClientInterface
     {
         return $this->httpClient;
     }
+
+    /**
+     * @param HttpClientInterface $httpClient
+     * @return ApiClientInterface
+     */
+    public function withHttpClient(HttpClientInterface $httpClient) : ApiClientInterface
+    {
+        $instance = clone $this;
+        $instance->httpClient = $httpClient;
+        return $instance;
+    }
 }

@@ -165,4 +165,10 @@ interface ApiClientInterface
      * @return HttpClientInterface
      */
     public function httpClient(): HttpClientInterface;
+
+    /**
+     * @param HttpClientInterface $httpClient
+     * @return ApiClientInterface
+     */
+    public function withHttpClient(HttpClientInterface $httpClient) : ApiClientInterface;
 }
