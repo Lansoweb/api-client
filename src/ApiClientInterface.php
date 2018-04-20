@@ -3,6 +3,7 @@
 namespace Los\ApiClient;
 
 use Los\ApiClient\Exception;
+use Los\ApiClient\HttpClient\HttpClientInterface;
 use Los\ApiClient\Resource\ApiResource;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -159,4 +160,9 @@ interface ApiClientInterface
      * @return ResponseInterface
      */
     public function response(): ?ResponseInterface;
+
+    /**
+     * @return HttpClientInterface
+     */
+    public function httpClient(): HttpClientInterface;
 }

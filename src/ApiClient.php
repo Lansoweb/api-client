@@ -494,4 +494,12 @@ final class ApiClient implements ApiClientInterface
     {
         return $this->response;
     }
+
+    /**
+     * @return HttpClientInterface
+     */
+    public function httpClient(): HttpClientInterface
+    {
+        return $this->httpClient;
+    }
 }
