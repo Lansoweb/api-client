@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 1.0.0 - 2018-12-06
+
+### Added
+
+- Nothing.
+
+### Changed
+
+- Updated dependency zendframework/zend-expressive-hal to ^1.1
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- Removed unecessary dependency zendframework/zend-diactoros
+
+### Fixed
+
+- Nothing.
+
 ## 0.9.2 - 2018-04-20
 
 ### Added
