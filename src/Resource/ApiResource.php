@@ -30,6 +30,10 @@ final class ApiResource extends HalResource
             );
         }
 
+        if (empty($body)) {
+            return static::fromData([], [], [], $response);
+        }
+
         $data = json_decode($body, true);
 
         if (JSON_ERROR_NONE !== json_last_error()) {
