@@ -288,6 +288,20 @@ final class ApiResource
         return $this->data[$name];
     }
 
+    public function getResource(int $index) : ApiResource
+    {
+        if ($index >= $this->countCollection()) {
+            throw new Exception\InvalidArgumentException('The collection has fewer elements than requested');
+        }
+
+        foreach ($this->embedded as $key => $value) {
+            if (! is_array($value) || count($value) < $index) {
+                throw new Exception\InvalidArgumentException('The collection has fewer elements than requested');
+            }
+            return $value[$index];
+        }
+    }
+
     /**
      * Retrieve all elements of the resource.
      *
