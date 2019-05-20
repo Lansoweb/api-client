@@ -167,6 +167,23 @@ final class ApiResource
         return $page !== null;
     }
 
+    public function countCollection() : int
+    {
+        $count = $this->getElement('_count') ?? $this->getElement('count');
+
+        if ($count !== null ) {
+            return (int) $count;
+        }
+
+        if (empty($this->embedded)) {
+            return 0;
+        }
+
+        foreach ($this->embedded as $key => $value) {
+            return count($value);
+        }
+    }
+
     /**
      * @return bool
      */
@@ -284,6 +301,11 @@ final class ApiResource
     public function getElements() : array
     {
         return array_merge($this->data, $this->embedded);
+    }
+
+    public function getData() : array
+    {
+        return $this->data;
     }
 
     /**
