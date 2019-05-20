@@ -46,6 +46,8 @@ interface ApiClientInterface
      */
     public function get($uri, array $options = []);
 
+    public function getCached(string $uri, string $cacheKey, array $options = [], int $ttl = 600) : ApiResource;
+
     /**
      * @param string|UriInterface $uri
      * @param array $options

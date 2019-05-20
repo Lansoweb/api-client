@@ -12,6 +12,7 @@ use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\UriInterface;
 use Psr\SimpleCache\CacheInterface;
+use Psr\SimpleCache\InvalidArgumentException;
 use Ramsey\Uuid\Uuid;
 use Throwable;
 use Zend\EventManager\EventManagerAwareTrait;
@@ -50,6 +51,8 @@ final class ApiClient implements ApiClientInterface
 
     private $cache;
 
+    private $defaultTtl;
+
     /**
      * Client constructor.
      * @param string|UriInterface $rootUrl
@@ -66,6 +69,8 @@ final class ApiClient implements ApiClientInterface
         $this->cache = $cache;
 
         $this->defaultOptions = $options;
+
+        $this->defaultTtl = $options['default_ttl'] ?? 600;
 
         $this->defaultRequest = new GuzzlePsr7\Request(
             'GET',
@@ -145,13 +150,35 @@ final class ApiClient implements ApiClientInterface
         return $this->request('GET', $uri, $options);
     }
 
-    public function getCached(string $uri, string $cacheKey, array $options = [], int $ttl = 600) : ApiResource
+    /**
+     * @param string $uri
+     * @param string $cacheKey
+     * @param array $options
+     * @param int|null $ttl
+     *
+     * @return ApiResource
+     * @throws Exception\BadResponseException
+     * @throws Exception\ClientException
+     * @throws Exception\RequestException
+     * @throws Exception\ServerException
+     * @throws InvalidArgumentException
+     */
+    public function getCached(string $uri, string $cacheKey, array $options = [], ?int $ttl = null) : ApiResource
     {
+        if ($ttl === null) {
+            $ttl = $this->defaultTtl;
+        }
+
+        if (! $this->cache instanceof CacheInterface) {
+            throw new Exception\RuntimeException('No cache defined.');
+        }
+
         if ($this->cache->has($cacheKey) !== false) {
             return ApiResource::fromResponse(new GuzzlePsr7\Response(200, json_decode($this->cache->get($cacheKey), true)));
         }
 
         $response = $this->get($uri, $options);
+
         if (! $response->isErrorResource()) {
             $this->cache->set($cacheKey, json_encode($response), $ttl);
         }
