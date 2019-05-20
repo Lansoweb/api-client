@@ -35,10 +35,6 @@ final class ApiResource
         $context = __CLASS__;
         array_walk($data, function ($value, $name) use ($context) {
             $this->validateElementName($name, $context);
-            if (! empty($value)) {
-                $this->embedded[$name] = $value;
-                return;
-            }
             $this->data[$name] = $value;
         });
 
