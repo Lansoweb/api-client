@@ -11,9 +11,10 @@ use Los\ApiClient\Resource\ApiResource;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\UriInterface;
+use Psr\SimpleCache\CacheInterface;
 use Ramsey\Uuid\Uuid;
+use Throwable;
 use Zend\EventManager\EventManagerAwareTrait;
-use Zend\Expressive\Hal\ResourceGenerator;
 
 final class ApiClient implements ApiClientInterface
 {
@@ -27,9 +28,6 @@ final class ApiClient implements ApiClientInterface
 
     /** @var RequestInterface */
     private $defaultRequest;
-
-    /** @var ResourceGenerator */
-    private $resourceGenerator;
 
     /** @var bool */
     private $httpErrors = true;
@@ -50,22 +48,22 @@ final class ApiClient implements ApiClientInterface
         'application/vnd.error+json'
     ];
 
+    private $cache;
+
     /**
      * Client constructor.
      * @param string|UriInterface $rootUrl
-     * @param ResourceGenerator $resourceGenerator
      * @param HttpClientInterface|null $httpClient
      * @param array $options
      */
     public function __construct(
-        $rootUrl,
-        ResourceGenerator $resourceGenerator,
-        HttpClientInterface $httpClient = null,
-        $options = []
+        string $rootUrl,
+        array $options = [],
+        ?CacheInterface $cache = null
     ) {
-        $this->resourceGenerator = $resourceGenerator;
+        $this->httpClient = new Guzzle6HttpClient();
 
-        $this->httpClient = $httpClient ?: new Guzzle6HttpClient();
+        $this->cache = $cache;
 
         $this->defaultOptions = $options;
 
@@ -145,6 +143,20 @@ final class ApiClient implements ApiClientInterface
     public function get($uri, array $options = [])
     {
         return $this->request('GET', $uri, $options);
+    }
+
+    public function getCached(string $uri, string $cacheKey, array $options = [], int $ttl = 600) : ApiResource
+    {
+        if ($this->cache->has($cacheKey) !== false) {
+            return ApiResource::fromResponse(new GuzzlePsr7\Response(200, json_decode($this->cache->get($cacheKey), true)));
+        }
+
+        $response = $this->get($uri, $options);
+        if (! $response->isErrorResource()) {
+            $this->cache->set($cacheKey, json_encode($response), $ttl);
+        }
+
+        return $response;
     }
 
     /**
@@ -241,7 +253,7 @@ final class ApiClient implements ApiClientInterface
         } catch (GuzzleException\ServerException $e) {
             $this->getEventManager()->trigger('request.fail', $this, $e);
             throw Exception\ServerException::fromThrowable($e);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->getEventManager()->trigger('request.fail', $this, $e);
             throw new Exception\RuntimeException($e->getMessage(), 500, $e);
         }
@@ -262,7 +274,7 @@ final class ApiClient implements ApiClientInterface
         $uri,
         array $options = []
     ) {
-        /** @var \Psr\Http\Message\RequestInterface $request */
+        /** @var RequestInterface $request */
         $request = clone $this->defaultRequest;
         $request = $request->withMethod($method);
         $request = $request->withUri(
