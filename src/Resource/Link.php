@@ -2,8 +2,9 @@
 namespace Los\ApiClient\Resource;
 
 use InvalidArgumentException;
+use Psr\Link\LinkInterface;
 
-class Link
+class Link implements LinkInterface
 {
     const AS_COLLECTION = '__FORCE_COLLECTION__';
 
