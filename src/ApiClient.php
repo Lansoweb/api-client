@@ -174,13 +174,15 @@ final class ApiClient implements ApiClientInterface
         }
 
         if ($this->cache->has($cacheKey) !== false) {
-            return ApiResource::fromResponse(new GuzzlePsr7\Response(200, json_decode($this->cache->get($cacheKey), true)));
+            return ApiResource::fromResponse(new GuzzlePsr7\Response(200, [], $this->cache->get($cacheKey)));
         }
 
         $response = $this->get($uri, $options);
 
-        if (! $response->isErrorResource()) {
-            $this->cache->set($cacheKey, json_encode($response), $ttl);
+        $responseArray = $response->toArray();
+
+        if (! $response->isErrorResource() && ! empty($responseArray)) {
+            $this->cache->set($cacheKey, json_encode($responseArray), $ttl);
         }
 
         return $response;
