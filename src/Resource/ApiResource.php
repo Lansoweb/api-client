@@ -25,12 +25,15 @@ final class ApiResource
      */
     private $embedded = [];
 
+    /** @var ?ResponseInterface */
+    private $response;
+
     /**
      * @param array $data
      * @param LinkInterface[] $links
      * @param ApiResource[] $embedded
      */
-    public function __construct(array $data = [], array $links = [], array $embedded = [])
+    public function __construct(array $data = [], array $links = [], array $embedded = [], ?ResponseInterface $response = null)
     {
         $context = __CLASS__;
         array_walk($data, function ($value, $name) use ($context) {
@@ -50,6 +53,7 @@ final class ApiResource
             throw new InvalidArgumentException('Non-Link item provided in $links array');
         }
         $this->links = $links;
+        $this->response = $response;
     }
 
     /**
@@ -137,9 +141,9 @@ final class ApiResource
         array $data,
         array $links = [],
         array $embedded = [],
-        ResponseInterface $response = null
+        ?ResponseInterface $response = null
     ) : self {
-        $resource = new self($data, $links, $embedded);
+        $resource = new self($data, $links, $embedded, $response);
         if ($response !== null && $response->getStatusCode() < 200 || $response->getStatusCode() >= 400) {
             $resource->isErrorResource = true;
         }
@@ -152,6 +156,11 @@ final class ApiResource
     public function isErrorResource(): bool
     {
         return $this->isErrorResource;
+    }
+
+    public function response() : ?ResponseInterface
+    {
+        return $this->response;
     }
 
     /**
@@ -178,6 +187,8 @@ final class ApiResource
         foreach ($this->embedded as $key => $value) {
             return count($value);
         }
+
+        return 0;
     }
 
     /**
@@ -288,7 +299,7 @@ final class ApiResource
         return $this->data[$name];
     }
 
-    public function getResource(int $index) : ApiResource
+    public function getResource(int $index) : ?ApiResource
     {
         if ($index >= $this->countCollection()) {
             throw new Exception\InvalidArgumentException('The collection has fewer elements than requested');
@@ -300,6 +311,8 @@ final class ApiResource
             }
             return $value[$index];
         }
+
+        return null;
     }
 
     /**
