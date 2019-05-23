@@ -287,7 +287,11 @@ final class ApiClient implements ApiClientInterface
             throw new Exception\RuntimeException($e->getMessage(), 500, $e);
         }
 
-        $this->getEventManager()->trigger('request.post', $this);
+        $this->getEventManager()->trigger('request.post', $this, [
+            'request' => $request,
+            'response' => $response,
+            'options' => $options,
+        ]);
 
         return $this->handleResponse($response, (bool) ($options['raw_response'] ?? false));
     }
