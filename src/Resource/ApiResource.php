@@ -458,6 +458,10 @@ final class ApiResource
 
     private function validateElementName(string $name, string $context) : void
     {
+        if ($name === '0') {
+            return;
+        }
+
         if (empty($name)) {
             throw new InvalidArgumentException(sprintf(
                 '$name provided to %s cannot be empty',
