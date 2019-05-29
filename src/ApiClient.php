@@ -213,7 +213,7 @@ final class ApiClient implements ApiClientInterface
      */
     public function patch($uri, array $options = [])
     {
-        return $this->request('PUT', $uri, $options);
+        return $this->request('PATCH', $uri, $options);
     }
 
     /**
