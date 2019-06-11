@@ -371,9 +371,7 @@ final class ApiClient implements ApiClientInterface
             $query
         );
 
-        return $request->withUri(
-            $uri->withQuery(http_build_query($newQuery, null, '&'))
-        );
+        return $request->withUri($uri->withQuery(http_build_query($newQuery)));
     }
 
     /**
