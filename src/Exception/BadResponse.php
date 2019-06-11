@@ -1,30 +1,34 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Los\ApiClient\Exception;
 
+use Exception;
 use Psr\Http\Message\ResponseInterface;
+use Throwable;
+use function sprintf;
 
-class BadResponseException extends \Exception implements ExceptionInterface
+class BadResponse extends Exception
 {
+    /** @var ResponseInterface */
     private $response;
 
     public function __construct(
-        $message,
+        string $message,
         ResponseInterface $response,
-        $previous = null
+        ?Throwable $previous = null
     ) {
-        $code = $response ? $response->getStatusCode() : 0;
-
-        parent::__construct($message, $code, $previous);
+        parent::__construct($message, $response->getStatusCode(), $previous);
 
         $this->response = $response;
     }
 
     public static function create(
         ResponseInterface $response,
-        $previous = null,
-        $message = null
-    ) {
+        ?Throwable $previous = null,
+        ?string $message = null
+    ) : self {
         if (! $message) {
             $code = $response->getStatusCode();
 
@@ -47,17 +51,17 @@ class BadResponseException extends \Exception implements ExceptionInterface
         return new self($message, $response, $previous);
     }
 
-    public function getResponse()
+    public function getResponse() : ResponseInterface
     {
         return $this->response;
     }
 
-    public function isClientError()
+    public function isClientError() : bool
     {
         return $this->getCode() >= 400 && $this->getCode() < 500;
     }
 
-    public function isServerError()
+    public function isServerError() : bool
     {
         return $this->getCode() >= 500 && $this->getCode() < 600;
     }

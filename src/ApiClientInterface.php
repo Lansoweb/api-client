@@ -1,150 +1,119 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Los\ApiClient;
 
-use Los\ApiClient\Exception;
 use Los\ApiClient\HttpClient\HttpClientInterface;
 use Los\ApiClient\Resource\ApiResource;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\UriInterface;
 
+// phpcs:disable SlevomatCodingStandard.Classes.SuperfluousInterfaceNaming.SuperfluousSuffix
 interface ApiClientInterface
 {
-    /**
-     * @return UriInterface
-     */
     public function getRootUrl() : UriInterface;
 
     /**
      * @param string|UriInterface $rootUrl
-     * @return ApiClientInterface
      */
     public function withRootUrl($rootUrl) : ApiClientInterface;
 
     /**
-     * @param string $name
      * @return array|string[]
      */
-    public function getHeader(string $name);
+    public function getHeader(string $name) : array;
 
     /**
-     * @param string $name
      * @param string|string[] $value
-     * @return ApiClientInterface
      */
-    public function withHeader($name, $value) : ApiClientInterface;
+    public function withHeader(string $name, $value) : ApiClientInterface;
 
     /**
      * @param string|UriInterface $uri
-     * @param array $options
-     * @return ApiResource
-     * @throws Exception\ClientException
-     * @throws Exception\RequestException
-     * @throws Exception\ServerException
-     * @throws Exception\BadResponseException
+     * @param array               $options
+     *
+     * @throws Exception\ClientError
+     * @throws Exception\RequestError
+     * @throws Exception\ServerError
+     * @throws Exception\BadResponse
      */
-    public function get($uri, array $options = []);
+    public function get($uri, array $options = []) : ApiResource;
 
     public function getCached(string $uri, string $cacheKey, array $options = [], int $ttl = 600) : ApiResource;
 
     /**
      * @param string|UriInterface $uri
-     * @param array $options
-     * @return ApiResource
-     * @throws Exception\BadResponseException
-     * @throws Exception\ClientException
-     * @throws Exception\RequestException
-     * @throws Exception\ServerException
+     * @param array               $options
+     *
+     * @throws Exception\BadResponse
+     * @throws Exception\ClientError
+     * @throws Exception\RequestError
+     * @throws Exception\ServerError
      */
-    public function post($uri, array $options = []);
+    public function post($uri, array $options = []) : ApiResource;
 
     /**
      * @param string|UriInterface $uri
-     * @param array $options
-     * @return ApiResource
-     * @throws Exception\ClientException
-     * @throws Exception\RequestException
-     * @throws Exception\ServerException
-     * @throws Exception\BadResponseException
+     * @param array               $options
+     *
+     * @throws Exception\ClientError
+     * @throws Exception\RequestError
+     * @throws Exception\ServerError
+     * @throws Exception\BadResponse
      */
-    public function patch($uri, array $options = []);
+    public function patch($uri, array $options = []) : ApiResource;
 
     /**
      * @param string|UriInterface $uri
-     * @param array $options
-     * @return ApiResource
-     * @throws Exception\ClientException
-     * @throws Exception\RequestException
-     * @throws Exception\ServerException
-     * @throws Exception\BadResponseException
+     * @param array               $options
+     *
+     * @throws Exception\ClientError
+     * @throws Exception\RequestError
+     * @throws Exception\ServerError
+     * @throws Exception\BadResponse
      */
-    public function put($uri, array $options = []);
+    public function put($uri, array $options = []) : ApiResource;
 
     /**
      * @param string|UriInterface $uri
-     * @param array $options
-     * @return ApiResource
-     * @throws Exception\ClientException
-     * @throws Exception\RequestException
-     * @throws Exception\ServerException
-     * @throws Exception\BadResponseException
+     * @param array               $options
+     *
+     * @throws Exception\ClientError
+     * @throws Exception\RequestError
+     * @throws Exception\ServerError
+     * @throws Exception\BadResponse
      */
-    public function delete($uri, array $options = []);
+    public function delete($uri, array $options = []) : ApiResource;
 
     /**
-     * @param string $method
      * @param string|UriInterface $uri
-     * @param array $options
-     * @return ApiResource
-     * @throws Exception\RequestException
-     * @throws Exception\ClientException
-     * @throws Exception\ServerException
-     * @throws Exception\BadResponseException
+     * @param array               $options
+     *
+     * @throws Exception\RequestError
+     * @throws Exception\ClientError
+     * @throws Exception\ServerError
+     * @throws Exception\BadResponse
      */
-    public function request($method, $uri, array $options = []);
+    public function request(string $method, $uri, array $options = []) : ApiResource;
 
     /**
-     * @param string $method
      * @param string|UriInterface $uri
-     * @param array $options
+     * @param array               $options
+     *
      * @return RequestInterface|static
      */
-    public function createRequest($method, $uri, array $options = []);
+    public function createRequest(string $method, $uri, array $options = []);
 
+    public function addRequestId(RequestInterface $request, ?string $id = null) : RequestInterface;
 
-    /**
-     * @param RequestInterface $request
-     * @param string|null $id
-     * @return RequestInterface
-     */
-    public function addRequestId(RequestInterface $request, string $id = null) : RequestInterface;
-
-    /**
-     * @param ResponseInterface $response
-     * @param float $time
-     * @return ResponseInterface
-     */
     public function addResponseTime(ResponseInterface $response, float $time) : ResponseInterface;
 
-    /**
-     * @param RequestInterface $request
-     * @param string|null $name
-     * @return RequestInterface
-     */
-    public function addRequestName(RequestInterface $request, string $name = null) : RequestInterface;
+    public function addRequestName(RequestInterface $request, ?string $name = null) : RequestInterface;
 
-    /**
-     * @param RequestInterface $request
-     * @param int $depth
-     * @return RequestInterface
-     */
     public function addRequestDepth(RequestInterface $request, int $depth = 0) : RequestInterface;
 
-    /**
-     * @param RequestInterface $request
-     * @return RequestInterface
-     */
     public function incrementRequestDepth(RequestInterface $request) : RequestInterface;
 
     /**
@@ -154,23 +123,12 @@ interface ApiClientInterface
 
     /**
      * @param mixed $extra
-     * @return ApiClientInterface
      */
     public function setExtra($extra) : ApiClientInterface;
 
-    /**
-     * @return ResponseInterface
-     */
-    public function response(): ?ResponseInterface;
+    public function response() : ?ResponseInterface;
 
-    /**
-     * @return HttpClientInterface
-     */
-    public function httpClient(): HttpClientInterface;
+    public function httpClient() : HttpClientInterface;
 
-    /**
-     * @param HttpClientInterface $httpClient
-     * @return ApiClientInterface
-     */
     public function withHttpClient(HttpClientInterface $httpClient) : ApiClientInterface;
 }

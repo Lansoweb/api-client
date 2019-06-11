@@ -1,21 +1,32 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Los\ApiClient;
 
 use GuzzleHttp\Exception as GuzzleException;
 use GuzzleHttp\Psr7 as GuzzlePsr7;
-use Los\ApiClient\Exception;
-use Los\ApiClient\HttpClient\Guzzle6HttpClient;
+use Los\ApiClient\HttpClient\GuzzleHttpClient;
 use Los\ApiClient\HttpClient\HttpClientInterface;
 use Los\ApiClient\Resource\ApiResource;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\UriInterface;
 use Psr\SimpleCache\CacheInterface;
-use Psr\SimpleCache\InvalidArgumentException;
 use Ramsey\Uuid\Uuid;
 use Throwable;
 use Zend\EventManager\EventManagerAwareTrait;
+use function array_key_exists;
+use function array_merge;
+use function array_merge_recursive;
+use function constant;
+use function defined;
+use function http_build_query;
+use function implode;
+use function is_array;
+use function json_encode;
+use function microtime;
+use function sprintf;
 
 final class ApiClient implements ApiClientInterface
 {
@@ -33,11 +44,21 @@ final class ApiClient implements ApiClientInterface
     /** @var bool */
     private $httpErrors = true;
 
+    /** @var bool */
+    private $allow5xx = false;
+
+    /** @var string */
+    private $exception5xx = Exception\BadResponse::class;
+
+    /** @var array */
+    private $exceptionStatusCodes = [];
+
     /** @var ResponseInterface */
     private $response;
 
     /**
      * Extra information. Provided by the client
+     *
      * @var mixed
      */
     private $extra;
@@ -46,25 +67,21 @@ final class ApiClient implements ApiClientInterface
     private static $validContentTypes = [
         'application/hal+json',
         'application/json',
-        'application/vnd.error+json'
+        'application/vnd.error+json',
     ];
 
+    /** @var CacheInterface|null */
     private $cache;
 
+    /** @var int */
     private $defaultTtl;
 
-    /**
-     * Client constructor.
-     * @param string|UriInterface $rootUrl
-     * @param HttpClientInterface|null $httpClient
-     * @param array $options
-     */
     public function __construct(
         string $rootUrl,
         array $options = [],
         ?CacheInterface $cache = null
     ) {
-        $this->httpClient = new Guzzle6HttpClient();
+        $this->httpClient = new GuzzleHttpClient();
 
         $this->cache = $cache;
 
@@ -77,8 +94,8 @@ final class ApiClient implements ApiClientInterface
             $rootUrl,
             array_merge_recursive(
                 [
-                    'User-Agent' => get_class($this),
-                    'Accept'     => implode(', ', self::$validContentTypes)
+                    'User-Agent' => static::class,
+                    'Accept'     => implode(', ', self::$validContentTypes),
                 ],
                 $this->defaultOptions['headers'] ?? []
             )
@@ -91,9 +108,6 @@ final class ApiClient implements ApiClientInterface
         $this->defaultRequest = clone $this->defaultRequest;
     }
 
-    /**
-     * @return UriInterface
-     */
     public function getRootUrl() : UriInterface
     {
         return $this->defaultRequest->getUri();
@@ -101,7 +115,6 @@ final class ApiClient implements ApiClientInterface
 
     /**
      * @param string|UriInterface $rootUrl
-     * @return ApiClientInterface
      */
     public function withRootUrl($rootUrl) : ApiClientInterface
     {
@@ -113,56 +126,41 @@ final class ApiClient implements ApiClientInterface
     }
 
     /**
-     * @param string $name
      * @return array|string[]
      */
-    public function getHeader(string $name)
+    public function getHeader(string $name) : array
     {
         return $this->defaultRequest->getHeader($name);
     }
 
     /**
-     * @param string $name
      * @param string|string[] $value
-     * @return ApiClientInterface
      */
-    public function withHeader($name, $value) : ApiClientInterface
+    public function withHeader(string $name, $value) : ApiClientInterface
     {
-        $instance = clone $this;
+        $instance                 = clone $this;
         $instance->defaultRequest = $instance->defaultRequest->withHeader(
             $name,
             $value
         );
+
         return $instance;
     }
 
     /**
      * @param string|UriInterface $uri
-     * @param array $options
-     * @return ApiResource
-     * @throws Exception\ClientException
-     * @throws Exception\RequestException
-     * @throws Exception\ServerException
-     * @throws Exception\BadResponseException
+     * @param array               $options
+     *
+     * @throws Exception\ClientError
+     * @throws Exception\RequestError
+     * @throws Exception\ServerError
+     * @throws Exception\BadResponse
      */
-    public function get($uri, array $options = [])
+    public function get($uri, array $options = []) : ApiResource
     {
         return $this->request('GET', $uri, $options);
     }
 
-    /**
-     * @param string $uri
-     * @param string $cacheKey
-     * @param array $options
-     * @param int|null $ttl
-     *
-     * @return ApiResource
-     * @throws Exception\BadResponseException
-     * @throws Exception\ClientException
-     * @throws Exception\RequestException
-     * @throws Exception\ServerException
-     * @throws InvalidArgumentException
-     */
     public function getCached(string $uri, string $cacheKey, array $options = [], ?int $ttl = null) : ApiResource
     {
         if ($ttl === null) {
@@ -170,7 +168,7 @@ final class ApiClient implements ApiClientInterface
         }
 
         if (! $this->cache instanceof CacheInterface) {
-            throw new Exception\RuntimeException('No cache defined.');
+            throw new Exception\RuntimeError('No cache defined.');
         }
 
         if ($this->cache->has($cacheKey) !== false) {
@@ -190,75 +188,74 @@ final class ApiClient implements ApiClientInterface
 
     /**
      * @param string|UriInterface $uri
-     * @param array $options
-     * @return ApiResource
-     * @throws Exception\BadResponseException
-     * @throws Exception\ClientException
-     * @throws Exception\RequestException
-     * @throws Exception\ServerException
+     * @param array               $options
+     *
+     * @throws Exception\BadResponse
+     * @throws Exception\ClientError
+     * @throws Exception\RequestError
+     * @throws Exception\ServerError
      */
-    public function post($uri, array $options = [])
+    public function post($uri, array $options = []) : ApiResource
     {
         return $this->request('POST', $uri, $options);
     }
 
     /**
      * @param string|UriInterface $uri
-     * @param array $options
-     * @return ApiResource
-     * @throws Exception\ClientException
-     * @throws Exception\RequestException
-     * @throws Exception\ServerException
-     * @throws Exception\BadResponseException
+     * @param array               $options
+     *
+     * @throws Exception\ClientError
+     * @throws Exception\RequestError
+     * @throws Exception\ServerError
+     * @throws Exception\BadResponse
      */
-    public function patch($uri, array $options = [])
+    public function patch($uri, array $options = []) : ApiResource
     {
         return $this->request('PATCH', $uri, $options);
     }
 
     /**
      * @param string|UriInterface $uri
-     * @param array $options
-     * @return ApiResource
-     * @throws Exception\ClientException
-     * @throws Exception\RequestException
-     * @throws Exception\ServerException
-     * @throws Exception\BadResponseException
+     * @param array               $options
+     *
+     * @throws Exception\ClientError
+     * @throws Exception\RequestError
+     * @throws Exception\ServerError
+     * @throws Exception\BadResponse
      */
-    public function put($uri, array $options = [])
+    public function put($uri, array $options = []) : ApiResource
     {
         return $this->request('PUT', $uri, $options);
     }
 
     /**
      * @param string|UriInterface $uri
-     * @param array $options
-     * @return ApiResource
-     * @throws Exception\ClientException
-     * @throws Exception\RequestException
-     * @throws Exception\ServerException
-     * @throws Exception\BadResponseException
+     * @param array               $options
+     *
+     * @throws Exception\ClientError
+     * @throws Exception\RequestError
+     * @throws Exception\ServerError
+     * @throws Exception\BadResponse
      */
-    public function delete($uri, array $options = [])
+    public function delete($uri, array $options = []) : ApiResource
     {
         return $this->request('DELETE', $uri, $options);
     }
 
     /**
-     * @param string $method
      * @param string|UriInterface $uri
-     * @param array $options
-     * @return ApiResource
-     * @throws Exception\RequestException
-     * @throws Exception\ClientException
-     * @throws Exception\ServerException
-     * @throws Exception\BadResponseException
+     * @param array               $options
+     *
+     * @throws Exception\RequestError
+     * @throws Exception\ClientError
+     * @throws Exception\ServerError
+     * @throws Exception\BadResponse
      */
     public function request(
-        $method,
+        string $method,
         $uri,
         array $options = []
-    ) {
+    ) : ApiResource {
         $request = $this->createRequest($method, $uri, array_merge_recursive($this->defaultOptions, $options));
 
         $this->getEventManager()->trigger('request.pre', $this);
@@ -275,16 +272,16 @@ final class ApiClient implements ApiClientInterface
             }
         } catch (GuzzleException\ConnectException $e) {
             $this->getEventManager()->trigger('request.fail', $this, $e);
-            throw Exception\RequestException::fromThrowable($e);
+            throw Exception\RequestError::fromThrowable($e);
         } catch (GuzzleException\ClientException $e) {
             $this->getEventManager()->trigger('request.fail', $this, $e);
-            throw Exception\ClientException::fromThrowable($e);
+            throw Exception\ClientError::fromThrowable($e);
         } catch (GuzzleException\ServerException $e) {
             $this->getEventManager()->trigger('request.fail', $this, $e);
-            throw Exception\ServerException::fromThrowable($e);
+            throw Exception\ServerError::fromThrowable($e);
         } catch (Throwable $e) {
             $this->getEventManager()->trigger('request.fail', $this, $e);
-            throw new Exception\RuntimeException($e->getMessage(), 500, $e);
+            throw new Exception\RuntimeError($e->getMessage(), 500, $e);
         }
 
         $this->getEventManager()->trigger('request.post', $this, [
@@ -297,13 +294,13 @@ final class ApiClient implements ApiClientInterface
     }
 
     /**
-     * @param string $method
      * @param string|UriInterface $uri
-     * @param array $options
+     * @param array               $options
+     *
      * @return RequestInterface|static
      */
     public function createRequest(
-        $method,
+        string $method,
         $uri,
         array $options = []
     ) {
@@ -314,15 +311,14 @@ final class ApiClient implements ApiClientInterface
             self::resolveUri($request->getUri(), $uri)
         );
         $request = $this->applyOptions($request, $options);
+
         return $request;
     }
 
     /**
-     * @param RequestInterface $request
      * @param array $options
-     * @return RequestInterface
      */
-    private function applyOptions(RequestInterface $request, array $options)
+    private function applyOptions(RequestInterface $request, array $options) : RequestInterface
     {
         if (isset($options['query'])) {
             $request = $this->applyQuery($request, $options['query']);
@@ -348,15 +344,21 @@ final class ApiClient implements ApiClientInterface
 
         $this->httpErrors = (bool) ($options['http_errors'] ?? true);
 
+        $this->allow5xx = (bool) ($options['allow5xx'] ?? false);
+
+        if (array_key_exists('exception5xx', $options)) {
+            $this->exception5xx = $options['exception5xx'];
+        }
+
+        $this->exceptionStatusCodes = $options['exception_status_codes'] ?? [];
+
         return $request;
     }
 
     /**
-     * @param RequestInterface $request
      * @param array|string $query
-     * @return RequestInterface
      */
-    private function applyQuery(RequestInterface $request, $query)
+    private function applyQuery(RequestInterface $request, $query) : RequestInterface
     {
         $uri = $request->getUri();
 
@@ -375,11 +377,9 @@ final class ApiClient implements ApiClientInterface
     }
 
     /**
-     * @param RequestInterface $request
      * @param array|string $body
-     * @return RequestInterface
      */
-    private function applyBody(RequestInterface $request, $body)
+    private function applyBody(RequestInterface $request, $body) : RequestInterface
     {
         if (is_array($body)) {
             $body = json_encode($body);
@@ -395,18 +395,23 @@ final class ApiClient implements ApiClientInterface
     }
 
     /**
-     * @param ResponseInterface $response
-     * @param bool $rawResponse
-     * @return ApiResource|null
-     * @throws Exception\BadResponseException
+     * @throws Exception\BadResponse
      */
     private function handleResponse(ResponseInterface $response, bool $rawResponse) : ?ApiResource
     {
-        $statusCode = $response->getStatusCode();
+        $statusCode     = $response->getStatusCode();
         $this->response = $response;
 
         if ($this->httpErrors && ($statusCode < 200 || $statusCode >= 400)) {
-            throw Exception\BadResponseException::create($response);
+            throw Exception\BadResponse::create($response);
+        }
+
+        if (! $this->allow5xx && $statusCode >= 500 && $statusCode <= 599) {
+            throw new $this->exception5xx();
+        }
+
+        if (array_key_exists($statusCode, $this->exceptionStatusCodes)) {
+            throw new $this->exceptionStatusCodes[$statusCode]();
         }
 
         if ($rawResponse) {
@@ -417,17 +422,17 @@ final class ApiClient implements ApiClientInterface
     }
 
     /**
-     * @param UriInterface $base
      * @param string|UriInterface $rel
+     *
      * @return mixed
      */
-    private static function resolveUri($base, $rel)
+    private static function resolveUri(UriInterface $base, $rel)
     {
         static $resolver, $castRel;
 
         if (! $resolver) {
             $resolver = ['GuzzleHttp\Psr7\UriResolver', 'resolve'];
-            $castRel = true;
+            $castRel  = true;
         }
 
         if ($castRel && ! ($rel instanceof UriInterface)) {
@@ -437,12 +442,7 @@ final class ApiClient implements ApiClientInterface
         return $resolver($base, $rel);
     }
 
-    /**
-     * @param RequestInterface $request
-     * @param string|null $id
-     * @return RequestInterface
-     */
-    public function addRequestId(RequestInterface $request, string $id = null) : RequestInterface
+    public function addRequestId(RequestInterface $request, ?string $id = null) : RequestInterface
     {
         if (! $request->hasHeader('X-Request-Id')) {
             return clone $request;
@@ -453,40 +453,28 @@ final class ApiClient implements ApiClientInterface
         }
 
         $request = $request->withoutHeader('X-Request-Id');
+
         return $request->withHeader('X-Request-Id', $id);
     }
 
-    /**
-     * @param ResponseInterface $response
-     * @param float $time
-     * @return ResponseInterface
-     */
     public function addResponseTime(ResponseInterface $response, float $time) : ResponseInterface
     {
         $response = $response->withoutHeader('X-Response-Time');
+
         return $response->withHeader('X-Response-Time', sprintf('%2.2fms', $time));
     }
 
-    /**
-     * @param RequestInterface $request
-     * @param string|null $name
-     * @return RequestInterface
-     */
-    public function addRequestName(RequestInterface $request, string $name = null) : RequestInterface
+    public function addRequestName(RequestInterface $request, ?string $name = null) : RequestInterface
     {
         if (empty($name)) {
             return clone $request;
         }
 
         $request = $request->withoutHeader('X-Request-Name');
+
         return $request->withHeader('X-Request-Name', $name);
     }
 
-    /**
-     * @param RequestInterface $request
-     * @param int $depth
-     * @return RequestInterface
-     */
     public function addRequestDepth(RequestInterface $request, int $depth = 0) : RequestInterface
     {
         if ($request->hasHeader('X-Request-Depth')) {
@@ -496,16 +484,12 @@ final class ApiClient implements ApiClientInterface
         return $request->withHeader('X-Request-Depth', $depth);
     }
 
-    /**
-     * @param RequestInterface $request
-     * @return RequestInterface
-     */
     public function incrementRequestDepth(RequestInterface $request) : RequestInterface
     {
         $depth = 0;
 
         if ($request->hasHeader('X-Request-Depth')) {
-            $depth = $request->getHeader('X-Request-Depth')[0];
+            $depth   = $request->getHeader('X-Request-Depth')[0];
             $request = $request->withoutHeader('X-Request-Depth');
         }
 
@@ -524,38 +508,29 @@ final class ApiClient implements ApiClientInterface
 
     /**
      * @param mixed $extra
-     * @return ApiClientInterface
      */
     public function setExtra($extra) : ApiClientInterface
     {
         $this->extra = $extra;
+
         return $this;
     }
 
-    /**
-     * @return ResponseInterface
-     */
-    public function response(): ?ResponseInterface
+    public function response() : ?ResponseInterface
     {
         return $this->response;
     }
 
-    /**
-     * @return HttpClientInterface
-     */
-    public function httpClient(): HttpClientInterface
+    public function httpClient() : HttpClientInterface
     {
         return $this->httpClient;
     }
 
-    /**
-     * @param HttpClientInterface $httpClient
-     * @return ApiClientInterface
-     */
     public function withHttpClient(HttpClientInterface $httpClient) : ApiClientInterface
     {
-        $instance = clone $this;
+        $instance             = clone $this;
         $instance->httpClient = $httpClient;
+
         return $instance;
     }
 }

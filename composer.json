@@ -8,13 +8,15 @@
     "guzzlehttp/guzzle": "^6.3",
     "guzzlehttp/psr7": "^1.5",
     "psr/container": "^1.0",
+    "psr/link": "^1.0",
     "psr/simple-cache": "^1.0",
     "ramsey/uuid": "^3.7",
     "zendframework/zend-eventmanager": "^3.2"
   },
   "require-dev" : {
-    "phpstan/phpstan": "^0.10.2",
-    "squizlabs/php_codesniffer": "^3.3",
+    "doctrine/coding-standard": "^6.0",
+    "phpstan/phpstan": "^0.11",
+    "squizlabs/php_codesniffer": "^3.4",
     "zendframework/zend-paginator": "^2.8"
   },
   "license" : "MIT",
@@ -48,9 +50,9 @@
       "@cs-check",
       "@phpstan"
     ],
-    "cs-check": "phpcs",
+    "cs-check": "phpcs -s",
     "cs-fix": "phpcbf",
-    "phpstan": "phpstan analyse -l 4 src"
+    "phpstan": "phpstan analyse -l 4 -c phpstan.neon src"
   }
 
 }

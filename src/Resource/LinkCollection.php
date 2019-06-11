@@ -1,17 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Los\ApiClient\Resource;
 
 use Psr\Link\LinkInterface;
-
 use function array_filter;
 use function in_array;
 
 trait LinkCollection
 {
-    /**
-     * @var LinkInterface[]
-     */
+    /** @var LinkInterface[] */
     private $links = [];
 
     /**
@@ -27,8 +26,9 @@ trait LinkCollection
      */
     public function getLinksByRel($rel)
     {
-        return array_filter($this->links, function (LinkInterface $link) use ($rel) {
+        return array_filter($this->links, static function (LinkInterface $link) use ($rel) {
             $rels = $link->getRels();
+
             return in_array($rel, $rels, true);
         });
     }
@@ -42,8 +42,9 @@ trait LinkCollection
             return $this;
         }
 
-        $new = clone $this;
+        $new          = clone $this;
         $new->links[] = $link;
+
         return $new;
     }
 
@@ -56,10 +57,11 @@ trait LinkCollection
             return $this;
         }
 
-        $new = clone $this;
-        $new->links = array_filter($this->links, function (LinkInterface $compare) use ($link) {
+        $new        = clone $this;
+        $new->links = array_filter($this->links, static function (LinkInterface $compare) use ($link) {
             return $link !== $compare;
         });
+
         return $new;
     }
 }
