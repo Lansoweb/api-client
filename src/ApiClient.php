@@ -405,11 +405,11 @@ final class ApiClient implements ApiClientInterface
         }
 
         if (! $this->allow5xx && $statusCode >= 500 && $statusCode <= 599) {
-            throw new $this->exception5xx();
+            throw new $this->exception5xx($response);
         }
 
         if (array_key_exists($statusCode, $this->exceptionStatusCodes)) {
-            throw new $this->exceptionStatusCodes[$statusCode]();
+            throw new $this->exceptionStatusCodes[$statusCode]($response);
         }
 
         if ($rawResponse) {
