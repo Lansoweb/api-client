@@ -476,7 +476,7 @@ final class ApiResource
         return $this->toArray();
     }
 
-    private function validateElementName(string $name, string $context) : void
+    private function validateElementName($name, string $context) : void
     {
         if ($name === '0' || $name === 0) {
             return;
