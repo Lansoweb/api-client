@@ -478,7 +478,7 @@ final class ApiResource
 
     private function validateElementName(string $name, string $context) : void
     {
-        if ($name === '0') {
+        if ($name === '0' || $name === 0) {
             return;
         }
 
