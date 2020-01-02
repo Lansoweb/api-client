@@ -85,7 +85,7 @@ The client triggers some events:
 * request.post
 * request.fail
 
-More info about events on [zend-eventmanager](https://github.com/zendframework/zend-eventmanager).
+More info about events on [zend-eventmanager](https://github.com/laminas/laminas-eventmanager).
 
 ### Request Id
 

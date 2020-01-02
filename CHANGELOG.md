@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 1.1.0 - 2020-01-02
+
+### Added
+
+- Nothing.
+
+### Changed
+
+- migrate packages from zendframework to laminas
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- Nothing.
+
+### Fixed
+
+- Nothing.
+
 ## 1.0.6 - 2019-05-17
 
 ### Added
@@ -142,7 +164,7 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Changed
 
-- Updated dependency zendframework/zend-expressive-hal to ^1.1
+- Updated dependency mezzio/mezzio-hal to ^1.1
 
 ### Deprecated
 
@@ -150,7 +172,7 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Removed
 
-- Removed unecessary dependency zendframework/zend-diactoros
+- Removed unecessary dependency laminas/laminas-diactoros
 
 ### Fixed
 

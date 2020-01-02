@@ -15,7 +15,7 @@ use Psr\Http\Message\UriInterface;
 use Psr\SimpleCache\CacheInterface;
 use Ramsey\Uuid\Uuid;
 use Throwable;
-use Zend\EventManager\EventManagerAwareTrait;
+use Laminas\EventManager\EventManagerAwareTrait;
 use function array_key_exists;
 use function array_merge;
 use function array_merge_recursive;

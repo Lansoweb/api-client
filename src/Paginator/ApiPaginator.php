@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Los\ApiClient;
 
 use Los\ApiClient\Resource\ApiResource;
-use Zend\Paginator\Adapter\AdapterInterface;
+use Laminas\Paginator\Adapter\AdapterInterface;
 
 class ApiPaginator implements AdapterInterface
 {
@@ -31,7 +31,7 @@ class ApiPaginator implements AdapterInterface
     /**
      * {@inheritDoc}
      *
-     * @see \Zend\Paginator\Adapter\AdapterInterface::getItems()
+     * @see \Laminas\Paginator\Adapter\AdapterInterface::getItems()
      */
     public function getItems($offset, $itemCountPerPage) : array
     {
