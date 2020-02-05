@@ -136,7 +136,7 @@ final class ApiResource
         foreach ($embeddedData as $name => $list) {
             $embeddedName = $name;
             foreach ($list as $tok) {
-                $embedded = static::createEmbedded($tok);
+                $embedded[] = static::createEmbedded($tok);
             }
         }
 
