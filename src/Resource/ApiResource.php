@@ -168,9 +168,8 @@ final class ApiResource
         return $resource;
     }
 
-    private static function createEmbedded(array $tok) : array
+    private static function createEmbedded(array $tok) : self
     {
-        $embedded = [];
         $halLinks = [];
         if (array_key_exists('_links', $tok)) {
             foreach ($tok['_links'] as $relation => $linkData) {
@@ -178,9 +177,8 @@ final class ApiResource
             }
         }
         unset($tok['_links'], $tok['_embedded']);
-        $embedded[] = new self($tok, $halLinks);
 
-        return $embedded;
+        return new self($tok, $halLinks);
     }
 
     public function isErrorResource() : bool
