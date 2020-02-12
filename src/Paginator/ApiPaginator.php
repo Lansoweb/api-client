@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Los\ApiClient;
 
-use Los\ApiClient\Resource\ApiResource;
 use Laminas\Paginator\Adapter\AdapterInterface;
+use Los\ApiClient\Resource\ApiResource;
 
 class ApiPaginator implements AdapterInterface
 {

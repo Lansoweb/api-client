@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 2.1.2 - 2020-02-12
+
+### Added
+
+- Added request_options array option to be passed during requests and contructor
+
+### Changed
+
+- Nothing.
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- Nothing.
+
+### Fixed
+
+- Nothing.
+
 ## 2.1.1 - 2020-02-05
 
 ### Added

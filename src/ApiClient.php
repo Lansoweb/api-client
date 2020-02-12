@@ -6,6 +6,7 @@ namespace Los\ApiClient;
 
 use GuzzleHttp\Exception as GuzzleException;
 use GuzzleHttp\Psr7 as GuzzlePsr7;
+use Laminas\EventManager\EventManagerAwareTrait;
 use Los\ApiClient\HttpClient\GuzzleHttpClient;
 use Los\ApiClient\HttpClient\HttpClientInterface;
 use Los\ApiClient\Resource\ApiResource;
@@ -15,7 +16,6 @@ use Psr\Http\Message\UriInterface;
 use Psr\SimpleCache\CacheInterface;
 use Ramsey\Uuid\Uuid;
 use Throwable;
-use Laminas\EventManager\EventManagerAwareTrait;
 use function array_key_exists;
 use function array_merge;
 use function array_merge_recursive;
@@ -263,7 +263,8 @@ final class ApiClient implements ApiClientInterface
         try {
             $requestTime = microtime(true);
 
-            $response = $this->httpClient->send($request);
+            $requestOptions = $options['request_options'] ?? $this->defaultOptions['request_options'] ?? [];
+            $response = $this->httpClient->send($request, $requestOptions);
 
             if (isset($options['add_request_time']) && $options['add_request_time'] === true) {
                 $responseTime = (float) sprintf('%.2f', (microtime(true) - $requestTime) * 1000);
@@ -405,11 +406,11 @@ final class ApiClient implements ApiClientInterface
         }
 
         if (! $this->allow5xx && $statusCode >= 500 && $statusCode <= 599) {
-            throw ($this->exception5xx)::create($response);
+            throw $this->exception5xx::create($response);
         }
 
         if (array_key_exists($statusCode, $this->exceptionStatusCodes)) {
-            throw ($this->exceptionStatusCodes[$statusCode])::create($response);
+            throw $this->exceptionStatusCodes[$statusCode]::create($response);
         }
 
         if ($rawResponse) {

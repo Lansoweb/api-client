@@ -33,6 +33,13 @@ Copy the los-api-client.global.php.dist from this module to your application's c
         'query' => [
             'key' => '123',
         ],
+        'request_options' => [
+            'request_options' => [
+                'timeout' => 10,
+                'connect_timeout' => 2,
+                'read_timeout' => 10,
+            ],
+        ],
     ],
 ],
 ```

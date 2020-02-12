@@ -474,6 +474,9 @@ final class ApiResource
         return $this->toArray();
     }
 
+    /**
+     * @param string|int $name
+     */
     private function validateElementName($name, string $context) : void
     {
         if ($name === '0' || $name === 0) {
