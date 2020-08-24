@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 2.1.3 - 2020-08-24
+
+### Added
+
+- Nothing.
+
+### Changed
+
+- Allowing usage of ramsey/uuid v3 or v4
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- Nothing.
+
+### Fixed
+
+- Nothing.
+
 ## 2.1.2 - 2020-02-12
 
 ### Added
