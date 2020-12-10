@@ -1,6 +1,6 @@
 # https://help.github.com/en/categories/automating-your-workflow-with-github-actions
 
-name: "Static Analysis by Psalm"
+name: "Static Analysis by PHPStan"
 
 on:
   pull_request:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   static-analysis-psalm:
-    name: "Static Analysis by Psalm"
+    name: "Static Analysis by PHPStan"
 
     runs-on: ${{ matrix.operating-system }}
 

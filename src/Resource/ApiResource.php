@@ -219,7 +219,6 @@ final class ApiResource
             return count($value);
         }
 
-        // @phpstan-ignore-next-line
         return 0;
     }
 
@@ -331,12 +330,10 @@ final class ApiResource
         }
 
         foreach ($this->embedded as $key => $value) {
-            // @phpstan-ignore-next-line
             if (! is_array($value) || count($value) < $index) {
                 throw new Exception\InvalidArgument('The collection has fewer elements than requested');
             }
 
-            // @phpstan-ignore-next-line
             return $value[$index];
         }
 
@@ -564,7 +561,6 @@ final class ApiResource
             return [$this->embedded[$name], $resource];
         }
 
-        // @phpstan-ignore-next-line
         $collection = $this->embedded[$name];
         /** @noinspection PhpParamsInspection */
         array_push($collection, $resource);

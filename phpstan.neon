@@ -1,2 +1,5 @@
 parameters:
-    ignoreErrors:
+    level: 2
+    checkMissingIterableValueType: false
+    paths:
+        - ./src
