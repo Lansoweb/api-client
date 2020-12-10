@@ -10,12 +10,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Link\LinkInterface;
 use RuntimeException;
 use Throwable;
-use const JSON_ERROR_CTRL_CHAR;
-use const JSON_ERROR_DEPTH;
-use const JSON_ERROR_NONE;
-use const JSON_ERROR_STATE_MISMATCH;
-use const JSON_ERROR_SYNTAX;
-use const JSON_ERROR_UTF8;
+
 use function array_key_exists;
 use function array_map;
 use function array_merge;
@@ -32,21 +27,27 @@ use function json_last_error;
 use function json_last_error_msg;
 use function sprintf;
 
+use const JSON_ERROR_CTRL_CHAR;
+use const JSON_ERROR_DEPTH;
+use const JSON_ERROR_NONE;
+use const JSON_ERROR_STATE_MISMATCH;
+use const JSON_ERROR_SYNTAX;
+use const JSON_ERROR_UTF8;
+
 final class ApiResource
 {
     use LinkCollection;
 
-    /** @var bool */
-    private $isErrorResource = false;
+    private bool $isErrorResource = false;
 
     /** @var array All data to represent. */
-    private $data = [];
+    private array $data = [];
 
     /** @var ApiResource[] */
-    private $embedded = [];
+    private array $embedded = [];
 
     /** @var ?ResponseInterface */
-    private $response;
+    private ?ResponseInterface $response = null;
 
     /**
      * @param array           $data
@@ -60,22 +61,25 @@ final class ApiResource
         ?ResponseInterface $response = null
     ) {
         $context = self::class;
-        array_walk($data, function ($value, $name) use ($context) : void {
+        array_walk($data, function ($value, $name) use ($context): void {
             $this->validateElementName($name, $context);
             $this->data[$name] = $value;
         });
 
-        array_walk($embedded, function ($resource, $name) use ($context) : void {
+        array_walk($embedded, function ($resource, $name) use ($context): void {
             $this->validateElementName($name, $context);
             $this->detectCollisionWithData($name, $context);
             $this->embedded[$name] = $resource;
         });
 
-        if (array_reduce($links, static function ($containsNonLinkItem, $link) {
-            return $containsNonLinkItem || ! $link instanceof LinkInterface;
-        }, false)) {
+        if (
+            array_reduce($links, static function ($containsNonLinkItem, $link) {
+                return $containsNonLinkItem || ! $link instanceof LinkInterface;
+            }, false)
+        ) {
             throw new InvalidArgumentException('Non-Link item provided in $links array');
         }
+
         $this->links    = $links;
         $this->response = $response;
     }
@@ -85,7 +89,7 @@ final class ApiResource
      *
      * @throws Exception\BadResponse
      */
-    public static function fromResponse(ResponseInterface $response) : self
+    public static function fromResponse(ResponseInterface $response): self
     {
         try {
             $body = $response->getBody()->getContents();
@@ -159,7 +163,7 @@ final class ApiResource
         array $links = [],
         array $embedded = [],
         ?ResponseInterface $response = null
-    ) : self {
+    ): self {
         $resource = new self($data, $links, $embedded, $response);
         if ($response !== null && $response->getStatusCode() < 200 || $response->getStatusCode() >= 400) {
             $resource->isErrorResource = true;
@@ -168,7 +172,7 @@ final class ApiResource
         return $resource;
     }
 
-    private static function createEmbedded(array $tok) : self
+    private static function createEmbedded(array $tok): self
     {
         $halLinks = [];
         if (array_key_exists('_links', $tok)) {
@@ -176,29 +180,30 @@ final class ApiResource
                 $halLinks[] = new Link($relation, $linkData['href']);
             }
         }
+
         unset($tok['_links'], $tok['_embedded']);
 
         return new self($tok, $halLinks);
     }
 
-    public function isErrorResource() : bool
+    public function isErrorResource(): bool
     {
         return $this->isErrorResource;
     }
 
-    public function response() : ?ResponseInterface
+    public function response(): ?ResponseInterface
     {
         return $this->response;
     }
 
-    public function isCollection() : bool
+    public function isCollection(): bool
     {
         $page = $this->getElement('_page') ?? $this->getElement('page');
 
         return $page !== null;
     }
 
-    public function countCollection() : int
+    public function countCollection(): int
     {
         $count = $this->getElement('_count') ?? $this->getElement('count');
 
@@ -214,10 +219,11 @@ final class ApiResource
             return count($value);
         }
 
+        // @phpstan-ignore-next-line
         return 0;
     }
 
-    public function hasMorePages() : bool
+    public function hasMorePages(): bool
     {
         $page = $this->getElement('_page') ?? $this->getElement('page');
 
@@ -237,7 +243,7 @@ final class ApiResource
     /**
      * @throws Exception\MissingElement
      */
-    public function getTotalItems() : int
+    public function getTotalItems(): int
     {
         $count = $this->getElement('_total_items') ?? $this->getElement('total_items');
 
@@ -268,7 +274,7 @@ final class ApiResource
         return $element[0];
     }
 
-    private static function getLastJsonError() : string
+    private static function getLastJsonError(): string
     {
         if (function_exists('json_last_error_msg')) {
             return json_last_error_msg();
@@ -318,17 +324,19 @@ final class ApiResource
         return $this->data[$name];
     }
 
-    public function getResource(int $index) : ?ApiResource
+    public function getResource(int $index): ?ApiResource
     {
         if ($index >= $this->countCollection()) {
             throw new Exception\InvalidArgument('The collection has fewer elements than requested');
         }
 
         foreach ($this->embedded as $key => $value) {
+            // @phpstan-ignore-next-line
             if (! is_array($value) || count($value) < $index) {
                 throw new Exception\InvalidArgument('The collection has fewer elements than requested');
             }
 
+            // @phpstan-ignore-next-line
             return $value[$index];
         }
 
@@ -341,12 +349,12 @@ final class ApiResource
      * Returned as a set of key/value pairs. Embedded resources are mixed
      * in as `ApiResource` instances under the associated key.
      */
-    public function getElements() : array
+    public function getElements(): array
     {
         return array_merge($this->data, $this->embedded);
     }
 
-    public function getData() : array
+    public function getData(): array
     {
         return $this->data;
     }
@@ -366,11 +374,12 @@ final class ApiResource
      * @throws RuntimeException if $name is already in use for an embedded
      *     resource.
      */
-    public function withElement(string $name, $value) : ApiResource
+    public function withElement(string $name, $value): ApiResource
     {
         $this->validateElementName($name, __METHOD__);
 
-        if (! empty($value)
+        if (
+            ! empty($value)
             && ($value instanceof self || $this->isResourceCollection($value))
         ) {
             return $this->embed($name, $value);
@@ -390,7 +399,7 @@ final class ApiResource
      * @throws InvalidArgumentException if $name is empty.
      * @throws InvalidArgumentException if $name is a reserved keyword.
      */
-    public function withoutElement(string $name) : ApiResource
+    public function withoutElement(string $name): ApiResource
     {
         $this->validateElementName($name, __METHOD__);
 
@@ -418,7 +427,7 @@ final class ApiResource
      * resource, it will be replaced. Otherwise, the new elements are added to
      * the resource returned.
      */
-    public function withElements(array $elements) : ApiResource
+    public function withElements(array $elements): ApiResource
     {
         $resource = $this;
         foreach ($elements as $name => $value) {
@@ -434,7 +443,7 @@ final class ApiResource
      *                          array containing a single resource should be represented as an array of
      *                          resources during representation.
      */
-    public function embed(string $name, $resource, bool $forceCollection = false) : ApiResource
+    public function embed(string $name, $resource, bool $forceCollection = false): ApiResource
     {
         $this->validateElementName($name, __METHOD__);
         $this->detectCollisionWithData($name, __METHOD__);
@@ -446,13 +455,14 @@ final class ApiResource
                 self::class
             ));
         }
+
         $new                  = clone $this;
         $new->embedded[$name] = $this->aggregateEmbeddedResource($name, $resource, $forceCollection);
 
         return $new;
     }
 
-    public function toArray() : array
+    public function toArray(): array
     {
         $resource = $this->data;
 
@@ -469,7 +479,7 @@ final class ApiResource
         return $resource;
     }
 
-    public function jsonSerialize() : array
+    public function jsonSerialize(): array
     {
         return $this->toArray();
     }
@@ -477,7 +487,7 @@ final class ApiResource
     /**
      * @param string|int $name
      */
-    private function validateElementName($name, string $context) : void
+    private function validateElementName($name, string $context): void
     {
         if ($name === '0' || $name === 0) {
             return;
@@ -489,6 +499,7 @@ final class ApiResource
                 $context
             ));
         }
+
         if (in_array($name, ['_links', '_embedded'], true)) {
             throw new InvalidArgumentException(sprintf(
                 'Error calling %s: %s is not a reserved element $name and cannot be retrieved',
@@ -498,7 +509,7 @@ final class ApiResource
         }
     }
 
-    private function detectCollisionWithData(string $name, string $context) : void
+    private function detectCollisionWithData(string $name, string $context): void
     {
         if (isset($this->data[$name])) {
             throw new RuntimeException(sprintf(
@@ -509,7 +520,7 @@ final class ApiResource
         }
     }
 
-    private function detectCollisionWithEmbeddedResource(string $name, string $context) : void
+    private function detectCollisionWithEmbeddedResource(string $name, string $context): void
     {
         if (isset($this->embedded[$name])) {
             throw new RuntimeException(sprintf(
@@ -553,6 +564,7 @@ final class ApiResource
             return [$this->embedded[$name], $resource];
         }
 
+        // @phpstan-ignore-next-line
         $collection = $this->embedded[$name];
         /** @noinspection PhpParamsInspection */
         array_push($collection, $resource);
@@ -560,13 +572,13 @@ final class ApiResource
         return $collection;
     }
 
-    private function aggregateEmbeddedCollection(string $name, array $collection) : array
+    private function aggregateEmbeddedCollection(string $name, array $collection): array
     {
         return [$this->embedded[$name]] + $collection;
     }
 
     // phpcs:disable SlevomatCodingStandard.TypeHints.TypeHintDeclaration.MissingParameterTypeHint
-    private function isResourceCollection($value) : bool
+    private function isResourceCollection($value): bool
     {
         if (! is_array($value)) {
             return false;
@@ -577,7 +589,7 @@ final class ApiResource
         }, true);
     }
 
-    private function serializeLinks() : array
+    private function serializeLinks(): array
     {
         $relations = array_reduce($this->links, static function (array $byRelation, LinkInterface $link) {
             $representation = array_merge($link->getAttributes(), [
@@ -588,7 +600,7 @@ final class ApiResource
             }
 
             $linkRels = $link->getRels();
-            array_walk($linkRels, static function ($rel) use (&$byRelation, $representation) : void {
+            array_walk($linkRels, static function ($rel) use (&$byRelation, $representation): void {
                 $forceCollection = array_key_exists(Link::AS_COLLECTION, $representation)
                     ? (bool) $representation[Link::AS_COLLECTION]
                     : false;
@@ -620,7 +632,7 @@ final class ApiResource
             return $byRelation;
         }, []);
 
-        array_walk($relations, static function ($links, $key) use (&$relations) : void {
+        array_walk($relations, static function ($links, $key) use (&$relations): void {
             if (isset($relations[$key][Link::AS_COLLECTION])) {
                 // If forcing a collection, do nothing to the links, but DO
                 // remove the marker indicating a collection should be
@@ -636,10 +648,10 @@ final class ApiResource
         return $relations;
     }
 
-    private function serializeEmbeddedResources() : array
+    private function serializeEmbeddedResources(): array
     {
         $embedded = [];
-        array_walk($this->embedded, static function ($resource, $name) use (&$embedded) : void {
+        array_walk($this->embedded, static function ($resource, $name) use (&$embedded): void {
             $embedded[$name] = $resource instanceof self
                 ? $resource->toArray()
                 : array_map(static function (ApiResource $item) {

@@ -6,6 +6,7 @@ namespace Los\ApiClient\Resource;
 
 use InvalidArgumentException;
 use Psr\Link\LinkInterface;
+
 use function array_filter;
 use function array_reduce;
 use function get_class;
@@ -23,16 +24,15 @@ class Link implements LinkInterface
     public const AS_COLLECTION = '__FORCE_COLLECTION__';
 
     /** @var array */
-    private $attributes;
+    private array $attributes;
 
     /** @var string[] Link relation types */
-    private $relations;
+    private array $relations;
 
-    /** @var string */
-    private $uri;
+    private string $uri;
 
     /** @var bool Whether or not the link is templated */
-    private $isTemplated;
+    private bool $isTemplated;
 
     /**
      * @param string|string[] $relation   One or more relations represented by this link.
@@ -91,7 +91,8 @@ class Link implements LinkInterface
      */
     public function withHref($href)
     {
-        if (! is_string($href)
+        if (
+            ! is_string($href)
             && ! (is_object($href) && method_exists($href, '__toString'))
         ) {
             throw new InvalidArgumentException(sprintf(
@@ -100,6 +101,7 @@ class Link implements LinkInterface
                 is_object($href) ? get_class($href) : gettype($href)
             ));
         }
+
         $new      = clone $this;
         $new->uri = (string) $href;
 
@@ -195,7 +197,7 @@ class Link implements LinkInterface
      *
      * @throws InvalidArgumentException if $attribute is not a string or is empty.
      */
-    private function validateAttributeName($name, string $context) : void
+    private function validateAttributeName($name, string $context): void
     {
         if (! is_string($name) || empty($name)) {
             throw new InvalidArgumentException(sprintf(
@@ -213,7 +215,7 @@ class Link implements LinkInterface
      * @throws InvalidArgumentException if $value is an array, but one or more values
      *     is not a string.
      */
-    private function validateAttributeValue($value, string $context) : void
+    private function validateAttributeValue($value, string $context): void
     {
         if (! is_scalar($value) && ! is_array($value)) {
             throw new InvalidArgumentException(sprintf(
@@ -223,9 +225,11 @@ class Link implements LinkInterface
             ));
         }
 
-        if (is_array($value) && array_reduce($value, static function ($isInvalid, $value) {
+        if (
+            is_array($value) && array_reduce($value, static function ($isInvalid, $value) {
                 return $isInvalid || ! is_string($value);
-        }, false)) {
+            }, false)
+        ) {
             throw new InvalidArgumentException(sprintf(
                 '%s expects $value to contain an array of strings; one or more values was not a string',
                 $context
@@ -233,7 +237,7 @@ class Link implements LinkInterface
         }
     }
 
-    private function validateAttributes(array $attributes) : array
+    private function validateAttributes(array $attributes): array
     {
         foreach ($attributes as $name => $value) {
             $this->validateAttributeName($name, self::class);
@@ -254,9 +258,11 @@ class Link implements LinkInterface
             ));
         }
 
-        if (is_array($relation) && array_reduce($relation, static function ($isString, $value) {
+        if (
+            is_array($relation) && array_reduce($relation, static function ($isString, $value) {
                 return $isString === false || is_string($value) || empty($value);
-        }, true) === false) {
+            }, true) === false
+        ) {
             throw new InvalidArgumentException(
                 'When passing an array for $relation, each value must be a non-empty string; '
                 . 'one or more non-string or empty values were present'

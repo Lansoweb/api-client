@@ -13,22 +13,22 @@ use Psr\Http\Message\UriInterface;
 // phpcs:disable SlevomatCodingStandard.Classes.SuperfluousInterfaceNaming.SuperfluousSuffix
 interface ApiClientInterface
 {
-    public function getRootUrl() : UriInterface;
+    public function getRootUrl(): UriInterface;
 
     /**
      * @param string|UriInterface $rootUrl
      */
-    public function withRootUrl($rootUrl) : ApiClientInterface;
+    public function withRootUrl($rootUrl): ApiClientInterface;
 
     /**
      * @return array|string[]
      */
-    public function getHeader(string $name) : array;
+    public function getHeader(string $name): array;
 
     /**
      * @param string|string[] $value
      */
-    public function withHeader(string $name, $value) : ApiClientInterface;
+    public function withHeader(string $name, $value): ApiClientInterface;
 
     /**
      * @param string|UriInterface $uri
@@ -39,9 +39,9 @@ interface ApiClientInterface
      * @throws Exception\ServerError
      * @throws Exception\BadResponse
      */
-    public function get($uri, array $options = []) : ApiResource;
+    public function get($uri, array $options = []): ApiResource;
 
-    public function getCached(string $uri, string $cacheKey, array $options = [], int $ttl = 600) : ApiResource;
+    public function getCached(string $uri, string $cacheKey, array $options = [], int $ttl = 600): ApiResource;
 
     /**
      * @param string|UriInterface $uri
@@ -52,7 +52,7 @@ interface ApiClientInterface
      * @throws Exception\RequestError
      * @throws Exception\ServerError
      */
-    public function post($uri, array $options = []) : ApiResource;
+    public function post($uri, array $options = []): ApiResource;
 
     /**
      * @param string|UriInterface $uri
@@ -63,7 +63,7 @@ interface ApiClientInterface
      * @throws Exception\ServerError
      * @throws Exception\BadResponse
      */
-    public function patch($uri, array $options = []) : ApiResource;
+    public function patch($uri, array $options = []): ApiResource;
 
     /**
      * @param string|UriInterface $uri
@@ -74,7 +74,7 @@ interface ApiClientInterface
      * @throws Exception\ServerError
      * @throws Exception\BadResponse
      */
-    public function put($uri, array $options = []) : ApiResource;
+    public function put($uri, array $options = []): ApiResource;
 
     /**
      * @param string|UriInterface $uri
@@ -85,7 +85,7 @@ interface ApiClientInterface
      * @throws Exception\ServerError
      * @throws Exception\BadResponse
      */
-    public function delete($uri, array $options = []) : ApiResource;
+    public function delete($uri, array $options = []): ApiResource;
 
     /**
      * @param string|UriInterface $uri
@@ -96,7 +96,7 @@ interface ApiClientInterface
      * @throws Exception\ServerError
      * @throws Exception\BadResponse
      */
-    public function request(string $method, $uri, array $options = []) : ApiResource;
+    public function request(string $method, $uri, array $options = []): ApiResource;
 
     /**
      * @param string|UriInterface $uri
@@ -106,15 +106,15 @@ interface ApiClientInterface
      */
     public function createRequest(string $method, $uri, array $options = []);
 
-    public function addRequestId(RequestInterface $request, ?string $id = null) : RequestInterface;
+    public function addRequestId(RequestInterface $request, ?string $id = null): RequestInterface;
 
-    public function addResponseTime(ResponseInterface $response, float $time) : ResponseInterface;
+    public function addResponseTime(ResponseInterface $response, float $time): ResponseInterface;
 
-    public function addRequestName(RequestInterface $request, ?string $name = null) : RequestInterface;
+    public function addRequestName(RequestInterface $request, ?string $name = null): RequestInterface;
 
-    public function addRequestDepth(RequestInterface $request, int $depth = 0) : RequestInterface;
+    public function addRequestDepth(RequestInterface $request, int $depth = 0): RequestInterface;
 
-    public function incrementRequestDepth(RequestInterface $request) : RequestInterface;
+    public function incrementRequestDepth(RequestInterface $request): RequestInterface;
 
     /**
      * @return mixed $extra
@@ -124,11 +124,11 @@ interface ApiClientInterface
     /**
      * @param mixed $extra
      */
-    public function setExtra($extra) : ApiClientInterface;
+    public function setExtra($extra): ApiClientInterface;
 
-    public function response() : ?ResponseInterface;
+    public function response(): ?ResponseInterface;
 
-    public function httpClient() : HttpClientInterface;
+    public function httpClient(): HttpClientInterface;
 
-    public function withHttpClient(HttpClientInterface $httpClient) : ApiClientInterface;
+    public function withHttpClient(HttpClientInterface $httpClient): ApiClientInterface;
 }

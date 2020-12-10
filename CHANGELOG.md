@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 2.2.0 - TBD
+
+### Added
+
+- Support for PHP 8.0
+
+- Github Actions for phpcs, phpstan and release on milestone closed
+
+- clearCacheKey method to remove the specified key from the cache
+
+### Changed
+
+- Nothing.
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- Support for PHP < 7.4
+
+### Fixed
+
+- Nothing.
+
 ## 2.1.3 - 2020-08-24
 
 ### Added

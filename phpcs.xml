@@ -1,19 +1,14 @@
 <?xml version="1.0"?>
-<ruleset name="Zend Framework Coding Standard">
+<ruleset name="Library Coding Standard">
 
 	<!-- Paths to check -->
 	<file>config</file>
 	<file>src</file>
 
 	<rule ref="Doctrine">
-<!--		<exclude name="SlevomatCodingStandard.TypeHints.TypeHintDeclaration"/>-->
-		<exclude name="SlevomatCodingStandard.TypeHints.TypeHintDeclaration.MissingTraversableParameterTypeHintSpecification"/>
-		<exclude name="SlevomatCodingStandard.TypeHints.TypeHintDeclaration.MissingTraversablePropertyTypeHintSpecification"/>
-		<exclude name="SlevomatCodingStandard.TypeHints.TypeHintDeclaration.MissingTraversableReturnTypeHintSpecification"/>
-		<exclude name="Squiz.Commenting.FunctionComment.WrongStyle"/>
+		<exclude name="SlevomatCodingStandard.TypeHints"/>
 	</rule>
 
 	<rule ref="Generic.Metrics.CyclomaticComplexity"/>
 	<rule ref="Generic.Metrics.NestingLevel"/>
-
 </ruleset>

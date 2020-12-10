@@ -7,12 +7,12 @@ namespace Los\ApiClient\Exception;
 use Exception;
 use Psr\Http\Message\ResponseInterface;
 use Throwable;
+
 use function sprintf;
 
 class BadResponse extends Exception
 {
-    /** @var ResponseInterface */
-    private $response;
+    private ResponseInterface $response;
 
     public function __construct(
         string $message,
@@ -28,7 +28,7 @@ class BadResponse extends Exception
         ResponseInterface $response,
         ?Throwable $previous = null,
         ?string $message = null
-    ) : self {
+    ): self {
         if (! $message) {
             $code = $response->getStatusCode();
 
@@ -51,17 +51,17 @@ class BadResponse extends Exception
         return new self($message, $response, $previous);
     }
 
-    public function getResponse() : ResponseInterface
+    public function getResponse(): ResponseInterface
     {
         return $this->response;
     }
 
-    public function isClientError() : bool
+    public function isClientError(): bool
     {
         return $this->getCode() >= 400 && $this->getCode() < 500;
     }
 
-    public function isServerError() : bool
+    public function isServerError(): bool
     {
         return $this->getCode() >= 500 && $this->getCode() < 600;
     }
