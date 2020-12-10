@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
-## 2.2.1 - TBD
+## 2.2.1 - 2020-12-10
 
 ### Added
 
@@ -22,7 +22,7 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Fixed
 
-- Nothing.
+- Add clearCacheKey to the interface
 
 ## 2.2.0 - 2020-12-10
 
