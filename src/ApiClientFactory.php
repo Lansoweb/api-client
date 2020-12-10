@@ -8,7 +8,7 @@ use Psr\Container\ContainerInterface;
 
 class ApiClientFactory
 {
-    public function __invoke(ContainerInterface $container) : ApiClientInterface
+    public function __invoke(ContainerInterface $container): ApiClientInterface
     {
         $config = $container->get('config');
 

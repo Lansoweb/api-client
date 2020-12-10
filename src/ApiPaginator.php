@@ -9,16 +9,12 @@ use Los\ApiClient\Resource\ApiResource;
 
 class ApiPaginator implements AdapterInterface
 {
-    /** @var ApiClientInterface  */
-    private $client;
-    /** @var string */
-    private $url;
+    private ApiClientInterface $client;
+    private string $url;
     /** @var array */
-    private $query;
-    /** @var string */
-    private $collectionName;
-    /** @var ApiResource */
-    private $resource;
+    private array $query;
+    private string $collectionName;
+    private ?ApiResource $resource;
 
     public function __construct(ApiClient $apiClient, string $url, string $collectionName, array $query = [])
     {
@@ -33,7 +29,7 @@ class ApiPaginator implements AdapterInterface
      *
      * @see \Laminas\Paginator\Adapter\AdapterInterface::getItems()
      */
-    public function getItems($offset, $itemCountPerPage) : array
+    public function getItems($offset, $itemCountPerPage): array
     {
         if ($this->resource === null) {
             $this->resource = $this->client->get($this->url, ['query' => $this->query]);

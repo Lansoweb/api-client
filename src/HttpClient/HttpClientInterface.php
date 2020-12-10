@@ -10,5 +10,5 @@ use Psr\Http\Message\ResponseInterface;
 // phpcs:disable SlevomatCodingStandard.Classes.SuperfluousInterfaceNaming.SuperfluousSuffix
 interface HttpClientInterface
 {
-    public function send(RequestInterface $request, array $options = []) : ResponseInterface;
+    public function send(RequestInterface $request, array $options = []): ResponseInterface;
 }

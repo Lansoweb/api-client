@@ -9,7 +9,7 @@ use Throwable;
 
 class RequestError extends Exception
 {
-    public static function fromThrowable(?Throwable $previous = null) : self
+    public static function fromThrowable(?Throwable $previous = null): self
     {
         return new self('', 400, $previous);
     }

@@ -9,7 +9,7 @@ use Throwable;
 
 class ServerError extends Exception
 {
-    public static function fromThrowable(?Throwable $previous = null) : self
+    public static function fromThrowable(?Throwable $previous = null): self
     {
         return new self('', 500, $previous);
     }

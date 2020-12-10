@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace Los\ApiClient\Resource;
 
 use Psr\Link\LinkInterface;
+
 use function array_filter;
 use function in_array;
 
 trait LinkCollection
 {
     /** @var LinkInterface[] */
-    private $links = [];
+    private array $links = [];
 
     /**
      * {@inheritDoc}
