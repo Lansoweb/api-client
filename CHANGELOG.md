@@ -34,21 +34,24 @@ All notable changes to this project will be documented in this file, in reverse 
 
 - clearCacheKey method to remove the specified key from the cache
 
-### Changed
-
-- Nothing.
-
-### Deprecated
-
-- Nothing.
-
 ### Removed
 
 - Support for PHP < 7.4
 
-### Fixed
 
-- Nothing.
+-----
+
+### Release Notes for [2.2.0](https://github.com/Lansoweb/api-client/milestone/1)
+
+
+
+### 2.2.0
+
+- Total issues resolved: **0**
+- Total pull requests resolved: **1**
+- Total contributors: **1**
+
+ - [1: php 8.0, clearCacheKey](https://github.com/Lansoweb/api-client/pull/1) thanks to @Lansoweb
 
 ## 2.1.3 - 2020-08-24
 
