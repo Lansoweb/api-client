@@ -61,6 +61,6 @@
         ],
         "cs-check": "phpcs -s",
         "cs-fix": "phpcbf",
-        "phpstan": "phpstan analyse -l 4 -c phpstan.neon src"
+        "phpstan": "phpstan analyse -l 2 -c phpstan.neon src"
     }
 }
