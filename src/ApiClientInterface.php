@@ -25,6 +25,10 @@ interface ApiClientInterface
      */
     public function getHeader(string $name): array;
 
+    public function hasHeader(string $name): bool;
+
+    public function withoutHeader(string $name): ApiClientInterface;
+
     /**
      * @param string|string[] $value
      */

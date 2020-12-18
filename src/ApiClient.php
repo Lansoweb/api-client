@@ -127,6 +127,19 @@ final class ApiClient implements ApiClientInterface
         return $this->defaultRequest->getHeader($name);
     }
 
+    public function hasHeader(string $name): bool
+    {
+        return $this->defaultRequest->hasHeader($name);
+    }
+
+    public function withoutHeader(string $name): ApiClientInterface
+    {
+        $instance                 = clone $this;
+        $instance->defaultRequest = $instance->defaultRequest->withoutHeader($name);
+
+        return $instance;
+    }
+
     /**
      * @param string|string[] $value
      */
