@@ -131,4 +131,6 @@ interface ApiClientInterface
     public function httpClient(): HttpClientInterface;
 
     public function withHttpClient(HttpClientInterface $httpClient): ApiClientInterface;
+
+    public function clearCacheKey(string $cacheKey): void;
 }

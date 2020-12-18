@@ -24,6 +24,27 @@ All notable changes to this project will be documented in this file, in reverse 
 
 - Nothing.
 
+## 2.2.1 - 2020-12-10
+
+### Fixed
+
+- Add clearCacheKey to the interface
+
+
+-----
+
+### Release Notes for [2.2.1](https://github.com/Lansoweb/api-client/milestone/2)
+
+2.2.x bugfix release (patch)
+
+### 2.2.1
+
+- Total issues resolved: **0**
+- Total pull requests resolved: **1**
+- Total contributors: **1**
+
+ - [2: Add clearCacheKey to the interface](https://github.com/Lansoweb/api-client/pull/2) thanks to @Lansoweb
+
 ## 2.2.0 - 2020-12-10
 
 ### Added
