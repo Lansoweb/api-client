@@ -459,16 +459,18 @@ final class ApiResource
         return $new;
     }
 
-    public function toArray(): array
+    public function toArray(bool $includeLinks = true): array
     {
         $resource = $this->data;
 
-        $links = $this->serializeLinks();
-        if (! empty($links)) {
-            $resource['_links'] = $links;
+        if ($includeLinks) {
+            $links = $this->serializeLinks();
+            if (! empty($links)) {
+                $resource['_links'] = $links;
+            }
         }
 
-        $embedded = $this->serializeEmbeddedResources();
+        $embedded = $this->serializeEmbeddedResources($includeLinks);
         if (! empty($embedded)) {
             $resource['_embedded'] = $embedded;
         }
@@ -644,14 +646,14 @@ final class ApiResource
         return $relations;
     }
 
-    private function serializeEmbeddedResources(): array
+    private function serializeEmbeddedResources(bool $includeLinks = true): array
     {
         $embedded = [];
-        array_walk($this->embedded, static function ($resource, $name) use (&$embedded): void {
+        array_walk($this->embedded, static function ($resource, $name) use (&$embedded, $includeLinks): void {
             $embedded[$name] = $resource instanceof self
-                ? $resource->toArray()
-                : array_map(static function (ApiResource $item) {
-                    return $item->toArray();
+                ? $resource->toArray($includeLinks)
+                : array_map(static function (ApiResource $item) use ($includeLinks) {
+                    return $item->toArray($includeLinks);
                 }, $resource);
         });
 
