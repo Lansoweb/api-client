@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Added
 
-- Nothing.
+- Added a boolean parameter to toArray method to include or not _links, default to true
 
 ### Changed
 
