@@ -24,6 +24,27 @@ All notable changes to this project will be documented in this file, in reverse 
 
 - Nothing.
 
+## 2.3.1 - 2021-01-14
+
+### Added
+
+- Added a boolean parameter to toArray method to include or not _links, default to true
+
+
+-----
+
+### Release Notes for [2.3.1](https://github.com/Lansoweb/api-client/milestone/6)
+
+2.3.x bugfix release (patch)
+
+### 2.3.1
+
+- Total issues resolved: **0**
+- Total pull requests resolved: **1**
+- Total contributors: **1**
+
+ - [6: Add parameter  to toArray](https://github.com/Lansoweb/api-client/pull/6) thanks to @Lansoweb
+
 ## 2.3.0 - 2020-12-18
 
 
