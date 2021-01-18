@@ -278,7 +278,10 @@ final class ApiClient implements ApiClientInterface
     ): ApiResource {
         $request = $this->createRequest($method, $uri, array_merge_recursive($this->defaultOptions, $options));
 
-        $this->getEventManager()->trigger('request.pre', $this);
+        $this->getEventManager()->trigger('request.pre', $this, [
+            'request' => $request,
+            'options' => $options,
+        ]);
 
         try {
             $requestTime = microtime(true);

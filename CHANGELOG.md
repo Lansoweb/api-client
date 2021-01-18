@@ -24,6 +24,27 @@ All notable changes to this project will be documented in this file, in reverse 
 
 - Nothing.
 
+## 2.3.2 - 2021-01-18
+
+### Added
+
+- Added request and options objects to request.pre event trigger
+
+
+-----
+
+### Release Notes for [2.3.2](https://github.com/Lansoweb/api-client/milestone/8)
+
+2.3.x bugfix release (patch)
+
+### 2.3.2
+
+- Total issues resolved: **0**
+- Total pull requests resolved: **1**
+- Total contributors: **1**
+
+ - [8: Added request and options objects to request.pre event trigger](https://github.com/Lansoweb/api-client/pull/8) thanks to @Lansoweb
+
 ## 2.3.1 - 2021-01-14
 
 ### Added
