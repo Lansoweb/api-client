@@ -7,6 +7,7 @@ namespace Los\ApiClient;
 use GuzzleHttp\Exception as GuzzleException;
 use GuzzleHttp\Psr7 as GuzzlePsr7;
 use Laminas\EventManager\EventManagerAwareTrait;
+use Los\ApiClient\Exception\CacheNotSaved;
 use Los\ApiClient\HttpClient\GuzzleHttpClient;
 use Los\ApiClient\HttpClient\HttpClientInterface;
 use Los\ApiClient\Resource\ApiResource;
@@ -68,7 +69,7 @@ final class ApiClient implements ApiClientInterface
 
     private ?CacheInterface $cache = null;
 
-    private int $defaultTtl;
+    private ?int $defaultPerItemTtl = null;
 
     public function __construct(
         string $rootUrl,
@@ -81,7 +82,7 @@ final class ApiClient implements ApiClientInterface
 
         $this->defaultOptions = $options;
 
-        $this->defaultTtl = $options['default_ttl'] ?? 600;
+        $this->defaultPerItemTtl = $options['default_ttl'] ?? null;
 
         $this->defaultRequest = new GuzzlePsr7\Request(
             'GET',
@@ -170,8 +171,8 @@ final class ApiClient implements ApiClientInterface
 
     public function getCached(string $uri, string $cacheKey, array $options = [], ?int $ttl = null): ApiResource
     {
-        if ($ttl === null) {
-            $ttl = $this->defaultTtl;
+        if ($ttl === null && $this->defaultPerItemTtl !== null) {
+            $ttl = $this->defaultPerItemTtl;
         }
 
         if (! $this->cache instanceof CacheInterface) {
@@ -187,7 +188,11 @@ final class ApiClient implements ApiClientInterface
         $responseArray = $response->toArray();
 
         if (! $response->isErrorResource() && ! empty($responseArray)) {
-            $this->cache->set($cacheKey, json_encode($responseArray), $ttl);
+            $cacheSaved = $this->cache->set($cacheKey, json_encode($responseArray), $ttl);
+
+            if (! $cacheSaved) {
+                throw new CacheNotSaved();
+            }
         }
 
         return $response;
@@ -338,9 +343,8 @@ final class ApiClient implements ApiClientInterface
         $request = $request->withUri(
             self::resolveUri($request->getUri(), $uri)
         );
-        $request = $this->applyOptions($request, $options);
 
-        return $request;
+        return $this->applyOptions($request, $options);
     }
 
     /**

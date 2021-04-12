@@ -40,6 +40,7 @@ Copy the los-api-client.global.php.dist from this module to your application's c
                 'read_timeout' => 10,
             ],
         ],
+        'default_ttl' => 600,
     ],
 ],
 ```
@@ -84,6 +85,33 @@ $data = $ret->getResources('album');
 // $data is an array with the all resources from the response
 $data = $ret->getResources();
 ```
+
+### Cache
+```php
+/* @var \Psr\SimpleCache\CacheInterface */
+$cache = null; // Any PSR-16 cache service. 
+
+/* @var \Los\ApiClient\ApiClient $client */
+$client = new \Los\ApiClient\ApiClient('http://api.example.com', $cache);
+
+// The last param is a per item ttl, please make sure your cache service can handle it.
+/* @var \Los\ApiClient\Resource\ApiResource $ret */
+$ret = $client->getCached('/album', 'cached-key', [ 'query' => ['year' => 2018] ], null);
+
+// $data is an array with all data and resources (_embedded) from the response
+$data = $ret->getData();
+
+// $data is an array with the first album resource from the response
+$data = $ret->getFirstResource('album');
+
+// $data is an array with the all album resources from the response
+$data = $ret->getResources('album');
+
+// $data is an array with the all resources from the response
+$data = $ret->getResources();
+```
+
+
 
 ### Events
 
