@@ -2,27 +2,22 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
-## 2.4.0 - TBD
+## 2.4.0 - 2021-04-13
 
-### Added
 
-- Nothing.
+-----
 
-### Changed
+### Release Notes for [2.4.0](https://github.com/Lansoweb/api-client/milestone/7)
 
-- Nothing.
+Feature release (minor)
 
-### Deprecated
+### 2.4.0
 
-- Nothing.
+- Total issues resolved: **0**
+- Total pull requests resolved: **1**
+- Total contributors: **1**
 
-### Removed
-
-- Nothing.
-
-### Fixed
-
-- Nothing.
+ - [10: Change getCached method to work with cache services that does not handle per item ttl](https://github.com/Lansoweb/api-client/pull/10) thanks to @mariojrrc
 
 ## 2.3.2 - 2021-01-18
 
