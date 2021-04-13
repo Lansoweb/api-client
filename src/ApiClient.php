@@ -28,8 +28,10 @@ use function http_build_query;
 use function implode;
 use function is_array;
 use function json_encode;
+use function method_exists;
 use function microtime;
 use function sprintf;
+use function strtolower;
 
 final class ApiClient implements ApiClientInterface
 {
@@ -171,31 +173,7 @@ final class ApiClient implements ApiClientInterface
 
     public function getCached(string $uri, string $cacheKey, array $options = [], ?int $ttl = null): ApiResource
     {
-        if ($ttl === null && $this->defaultPerItemTtl !== null) {
-            $ttl = $this->defaultPerItemTtl;
-        }
-
-        if (! $this->cache instanceof CacheInterface) {
-            throw new Exception\RuntimeError('No cache defined.');
-        }
-
-        if ($this->cache->has($cacheKey) !== false) {
-            return ApiResource::fromResponse(new GuzzlePsr7\Response(200, [], $this->cache->get($cacheKey)));
-        }
-
-        $response = $this->get($uri, $options);
-
-        $responseArray = $response->toArray();
-
-        if (! $response->isErrorResource() && ! empty($responseArray)) {
-            $cacheSaved = $this->cache->set($cacheKey, json_encode($responseArray), $ttl);
-
-            if (! $cacheSaved) {
-                throw new CacheNotSaved();
-            }
-        }
-
-        return $response;
+        return $this->handleCached('GET', $uri, $cacheKey, $options, $ttl);
     }
 
     public function clearCacheKey(string $cacheKey): void
@@ -223,6 +201,11 @@ final class ApiClient implements ApiClientInterface
     public function post($uri, array $options = []): ApiResource
     {
         return $this->request('POST', $uri, $options);
+    }
+
+    public function postCached(string $uri, string $cacheKey, array $options = [], ?int $ttl = null): ApiResource
+    {
+        return $this->handleCached('POST', $uri, $cacheKey, $options, $ttl);
     }
 
     /**
@@ -562,5 +545,45 @@ final class ApiClient implements ApiClientInterface
         $instance->httpClient = $httpClient;
 
         return $instance;
+    }
+
+    private function handleCached(
+        string $httpMethod,
+        string $uri,
+        string $cacheKey,
+        array $options = [],
+        ?int $ttl = null
+    ): ApiResource {
+        $httpMethodNormalized = strtolower($httpMethod);
+
+        if (! method_exists($this, $httpMethodNormalized)) {
+            throw new Exception\RuntimeError(sprintf('Method %s not defined.', $httpMethodNormalized));
+        }
+
+        if (! $this->cache instanceof CacheInterface) {
+            throw new Exception\RuntimeError('No cache defined.');
+        }
+
+        if ($this->cache->has($cacheKey) !== false) {
+            return ApiResource::fromResponse(new GuzzlePsr7\Response(200, [], $this->cache->get($cacheKey)));
+        }
+
+        if ($ttl === null && $this->defaultPerItemTtl !== null) {
+            $ttl = $this->defaultPerItemTtl;
+        }
+
+        $response = $this->$httpMethodNormalized($uri, $options);
+
+        $responseArray = $response->toArray();
+
+        if (! $response->isErrorResource() && ! empty($responseArray)) {
+            $cacheSaved = $this->cache->set($cacheKey, json_encode($responseArray), $ttl);
+
+            if (! $cacheSaved) {
+                throw new CacheNotSaved();
+            }
+        }
+
+        return $response;
     }
 }

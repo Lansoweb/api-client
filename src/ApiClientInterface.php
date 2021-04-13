@@ -58,6 +58,8 @@ interface ApiClientInterface
      */
     public function post($uri, array $options = []): ApiResource;
 
+    public function postCached(string $uri, string $cacheKey, array $options = [], int $ttl = 600): ApiResource;
+
     /**
      * @param string|UriInterface $uri
      * @param array               $options
