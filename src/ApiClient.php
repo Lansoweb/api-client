@@ -6,6 +6,7 @@ namespace Los\ApiClient;
 
 use GuzzleHttp\Exception as GuzzleException;
 use GuzzleHttp\Psr7 as GuzzlePsr7;
+use Laminas\EventManager\EventManagerAwareInterface;
 use Laminas\EventManager\EventManagerAwareTrait;
 use Los\ApiClient\Exception\CacheNotSaved;
 use Los\ApiClient\HttpClient\GuzzleHttpClient;
@@ -33,7 +34,7 @@ use function microtime;
 use function sprintf;
 use function strtolower;
 
-final class ApiClient implements ApiClientInterface
+final class ApiClient implements ApiClientInterface, EventManagerAwareInterface
 {
     use EventManagerAwareTrait;
 
