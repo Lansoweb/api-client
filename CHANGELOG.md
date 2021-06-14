@@ -2,27 +2,22 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
-## 2.4.1 - TBD
+## 2.4.1 - 2021-06-14
 
-### Added
 
-- Nothing.
+-----
 
-### Changed
+### Release Notes for [2.4.1](https://github.com/Lansoweb/api-client/milestone/10)
 
-- Nothing.
+2.4.x bugfix release (patch)
 
-### Deprecated
+### 2.4.1
 
-- Nothing.
+- Total issues resolved: **0**
+- Total pull requests resolved: **1**
+- Total contributors: **1**
 
-### Removed
-
-- Nothing.
-
-### Fixed
-
-- Nothing.
+ - [11: Fix method signatures in ApiClientInterface](https://github.com/Lansoweb/api-client/pull/11) thanks to @mariojrrc
 
 ## 2.4.0 - 2021-04-13
 
