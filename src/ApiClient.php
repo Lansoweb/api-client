@@ -70,18 +70,14 @@ final class ApiClient implements ApiClientInterface, EventManagerAwareInterface
         'application/vnd.error+json',
     ];
 
-    private ?CacheInterface $cache = null;
-
     private ?int $defaultPerItemTtl = null;
 
     public function __construct(
         string $rootUrl,
         array $options = [],
-        ?CacheInterface $cache = null
+        private ?CacheInterface $cache = null,
     ) {
         $this->httpClient = new GuzzleHttpClient();
-
-        $this->cache = $cache;
 
         $this->defaultOptions = $options;
 
@@ -95,8 +91,8 @@ final class ApiClient implements ApiClientInterface, EventManagerAwareInterface
                     'User-Agent' => static::class,
                     'Accept'     => implode(', ', self::$validContentTypes),
                 ],
-                $this->defaultOptions['headers'] ?? []
-            )
+                $this->defaultOptions['headers'] ?? [],
+            ),
         );
     }
 
@@ -111,21 +107,17 @@ final class ApiClient implements ApiClientInterface, EventManagerAwareInterface
         return $this->defaultRequest->getUri();
     }
 
-    /**
-     * @param string|UriInterface $rootUrl
-     */
+    /** @param string|UriInterface $rootUrl */
     public function withRootUrl($rootUrl): ApiClientInterface
     {
         $instance = clone $this;
 
-        $instance->defaultRequest = $instance->defaultRequest->withUri(GuzzlePsr7\uri_for($rootUrl));
+        $instance->defaultRequest = $instance->defaultRequest->withUri(GuzzlePsr7\Utils::uriFor($rootUrl));
 
         return $instance;
     }
 
-    /**
-     * @return array|string[]
-     */
+    /** @return array|string[] */
     public function getHeader(string $name): array
     {
         return $this->defaultRequest->getHeader($name);
@@ -144,15 +136,13 @@ final class ApiClient implements ApiClientInterface, EventManagerAwareInterface
         return $instance;
     }
 
-    /**
-     * @param string|string[] $value
-     */
+    /** @param string|string[] $value */
     public function withHeader(string $name, $value): ApiClientInterface
     {
         $instance                 = clone $this;
         $instance->defaultRequest = $instance->defaultRequest->withHeader(
             $name,
-            $value
+            $value,
         );
 
         return $instance;
@@ -263,7 +253,7 @@ final class ApiClient implements ApiClientInterface, EventManagerAwareInterface
     public function request(
         string $method,
         $uri,
-        array $options = []
+        array $options = [],
     ): ApiResource {
         $request = $this->createRequest($method, $uri, array_merge_recursive($this->defaultOptions, $options));
 
@@ -319,21 +309,18 @@ final class ApiClient implements ApiClientInterface, EventManagerAwareInterface
     public function createRequest(
         string $method,
         $uri,
-        array $options = []
+        array $options = [],
     ) {
         $request = clone $this->defaultRequest;
         assert($request instanceof RequestInterface);
         $request = $request->withMethod($method);
         $request = $request->withUri(
-            self::resolveUri($request->getUri(), $uri)
+            self::resolveUri($request->getUri(), $uri),
         );
 
         return $this->applyOptions($request, $options);
     }
 
-    /**
-     * @param array $options
-     */
     private function applyOptions(RequestInterface $request, array $options): RequestInterface
     {
         if (isset($options['query'])) {
@@ -371,28 +358,24 @@ final class ApiClient implements ApiClientInterface, EventManagerAwareInterface
         return $request;
     }
 
-    /**
-     * @param array|string $query
-     */
+    /** @param array|string $query */
     private function applyQuery(RequestInterface $request, $query): RequestInterface
     {
         $uri = $request->getUri();
 
         if (! is_array($query)) {
-            $query = GuzzlePsr7\parse_query($query);
+            $query = GuzzlePsr7\Query::parse($query);
         }
 
         $newQuery = array_merge(
-            GuzzlePsr7\parse_query($uri->getQuery()),
-            $query
+            GuzzlePsr7\Query::parse($uri->getQuery()),
+            $query,
         );
 
         return $request->withUri($uri->withQuery(http_build_query($newQuery)));
     }
 
-    /**
-     * @param array|string $body
-     */
+    /** @param array|string $body */
     private function applyBody(RequestInterface $request, $body): RequestInterface
     {
         if (is_array($body)) {
@@ -400,17 +383,15 @@ final class ApiClient implements ApiClientInterface, EventManagerAwareInterface
             if (! $request->hasHeader('Content-Type')) {
                 $request = $request->withHeader(
                     'Content-Type',
-                    'application/json'
+                    'application/json',
                 );
             }
         }
 
-        return $request->withBody(GuzzlePsr7\stream_for($body));
+        return $request->withBody(GuzzlePsr7\Utils::streamFor($body));
     }
 
-    /**
-     * @throws Exception\BadResponse
-     */
+    /** @throws Exception\BadResponse */
     private function handleResponse(ResponseInterface $response, bool $rawResponse): ApiResource
     {
         $statusCode     = $response->getStatusCode();
@@ -512,17 +493,13 @@ final class ApiClient implements ApiClientInterface, EventManagerAwareInterface
         return $request->withHeader('X-Request-Depth', $depth);
     }
 
-    /**
-     * @return mixed $extra
-     */
+    /** @return mixed $extra */
     public function getExtra()
     {
         return $this->extra;
     }
 
-    /**
-     * @param mixed $extra
-     */
+    /** @param mixed $extra */
     public function setExtra($extra): ApiClientInterface
     {
         $this->extra = $extra;
@@ -553,7 +530,7 @@ final class ApiClient implements ApiClientInterface, EventManagerAwareInterface
         string $uri,
         string $cacheKey,
         array $options = [],
-        ?int $ttl = null
+        ?int $ttl = null,
     ): ApiResource {
         $httpMethodNormalized = strtolower($httpMethod);
 

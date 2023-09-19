@@ -15,23 +15,17 @@ interface ApiClientInterface
 {
     public function getRootUrl(): UriInterface;
 
-    /**
-     * @param string|UriInterface $rootUrl
-     */
+    /** @param string|UriInterface $rootUrl */
     public function withRootUrl($rootUrl): ApiClientInterface;
 
-    /**
-     * @return array|string[]
-     */
+    /** @return array|string[] */
     public function getHeader(string $name): array;
 
     public function hasHeader(string $name): bool;
 
     public function withoutHeader(string $name): ApiClientInterface;
 
-    /**
-     * @param string|string[] $value
-     */
+    /** @param string|string[] $value */
     public function withHeader(string $name, $value): ApiClientInterface;
 
     /**
@@ -122,14 +116,10 @@ interface ApiClientInterface
 
     public function incrementRequestDepth(RequestInterface $request): RequestInterface;
 
-    /**
-     * @return mixed $extra
-     */
+    /** @return mixed $extra */
     public function getExtra();
 
-    /**
-     * @param mixed $extra
-     */
+    /** @param mixed $extra */
     public function setExtra($extra): ApiClientInterface;
 
     public function response(): ?ResponseInterface;

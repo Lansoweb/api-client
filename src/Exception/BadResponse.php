@@ -12,22 +12,18 @@ use function sprintf;
 
 class BadResponse extends Exception
 {
-    private ResponseInterface $response;
-
     public function __construct(
         string $message,
-        ResponseInterface $response,
-        ?Throwable $previous = null
+        private ResponseInterface $response,
+        ?Throwable $previous = null,
     ) {
         parent::__construct($message, $response->getStatusCode(), $previous);
-
-        $this->response = $response;
     }
 
     public static function create(
         ResponseInterface $response,
         ?Throwable $previous = null,
-        ?string $message = null
+        ?string $message = null,
     ): self {
         if (! $message) {
             $code = $response->getStatusCode();
@@ -45,7 +41,7 @@ class BadResponse extends Exception
             '%s [status code] %s [reason phrase] %s.',
             $message,
             $response->getStatusCode(),
-            $response->getReasonPhrase()
+            $response->getReasonPhrase(),
         );
 
         return new self($message, $response, $previous);

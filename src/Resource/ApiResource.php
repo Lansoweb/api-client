@@ -46,9 +46,6 @@ final class ApiResource
     /** @var ApiResource[] */
     private array $embedded = [];
 
-    /** @var ?ResponseInterface */
-    private ?ResponseInterface $response = null;
-
     /**
      * @param array           $data
      * @param LinkInterface[] $links
@@ -58,7 +55,7 @@ final class ApiResource
         array $data = [],
         array $links = [],
         array $embedded = [],
-        ?ResponseInterface $response = null
+        private ?ResponseInterface $response = null,
     ) {
         $context = self::class;
         array_walk($data, function ($value, $name) use ($context): void {
@@ -80,8 +77,7 @@ final class ApiResource
             throw new InvalidArgumentException('Non-Link item provided in $links array');
         }
 
-        $this->links    = $links;
-        $this->response = $response;
+        $this->links = $links;
     }
 
     /**
@@ -97,10 +93,10 @@ final class ApiResource
             throw new Exception\BadResponse(
                 sprintf(
                     'Error getting response body: %s.',
-                    $e->getMessage()
+                    $e->getMessage(),
                 ),
                 $response,
-                $e
+                $e,
             );
         }
 
@@ -114,9 +110,9 @@ final class ApiResource
             throw new Exception\BadResponse(
                 sprintf(
                     'JSON parse error: %s.',
-                    self::getLastJsonError()
+                    self::getLastJsonError(),
                 ),
-                $response
+                $response,
             );
         }
 
@@ -162,7 +158,7 @@ final class ApiResource
         array $data,
         array $links = [],
         array $embedded = [],
-        ?ResponseInterface $response = null
+        ?ResponseInterface $response = null,
     ): self {
         $resource = new self($data, $links, $embedded, $response);
         if ($response !== null && $response->getStatusCode() < 200 || $response->getStatusCode() >= 400) {
@@ -239,9 +235,7 @@ final class ApiResource
         return (int) $page < (int) $pageCount;
     }
 
-    /**
-     * @throws Exception\MissingElement
-     */
+    /** @throws Exception\MissingElement */
     public function getTotalItems(): int
     {
         $count = $this->getElement('_total_items') ?? $this->getElement('total_items');
@@ -449,7 +443,7 @@ final class ApiResource
                 '%s expects a %s instance or array of %s instances',
                 __METHOD__,
                 self::class,
-                self::class
+                self::class,
             ));
         }
 
@@ -483,9 +477,7 @@ final class ApiResource
         return $this->toArray();
     }
 
-    /**
-     * @param string|int $name
-     */
+    /** @param string|int $name */
     private function validateElementName($name, string $context): void
     {
         if ($name === '0' || $name === 0) {
@@ -495,7 +487,7 @@ final class ApiResource
         if (empty($name)) {
             throw new InvalidArgumentException(sprintf(
                 '$name provided to %s cannot be empty',
-                $context
+                $context,
             ));
         }
 
@@ -503,7 +495,7 @@ final class ApiResource
             throw new InvalidArgumentException(sprintf(
                 'Error calling %s: %s is not a reserved element $name and cannot be retrieved',
                 $context,
-                $name
+                $name,
             ));
         }
     }
@@ -514,7 +506,7 @@ final class ApiResource
             throw new RuntimeException(sprintf(
                 'Collision detected in %s; attempt to embed resource matching element name "%s"',
                 $context,
-                $name
+                $name,
             ));
         }
     }
@@ -525,7 +517,7 @@ final class ApiResource
             throw new RuntimeException(sprintf(
                 'Collision detected in %s; attempt to add element matching resource name "%s"',
                 $context,
-                $name
+                $name,
             ));
         }
     }
