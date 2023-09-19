@@ -2,28 +2,23 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
-## 2.5.0 - TBD
+## 2.5.0 - 2023-09-19
 
-### Added
 
-- Nothing.
 
-### Changed
+-----
 
-- Nothing.
+### Release Notes for [2.5.0](https://github.com/Lansoweb/api-client/milestone/11)
 
-### Deprecated
+Feature release (minor)
 
-- Nothing.
+### 2.5.0
 
-### Removed
+- Total issues resolved: **0**
+- Total pull requests resolved: **1**
+- Total contributors: **1**
 
-- Nothing.
-
-### Fixed
-
-- Nothing.
-
+ - [13: remove php 7.4 and update dependencies](https://github.com/Lansoweb/api-client/pull/13) thanks to @Lansoweb
 
 ## 2.4.1 - 2021-06-14
 
