@@ -10,18 +10,15 @@ use Los\ApiClient\Resource\ApiResource;
 class ApiPaginator implements AdapterInterface
 {
     private ApiClientInterface $client;
-    private string $url;
-    /** @var array */
-    private array $query;
-    private string $collectionName;
     private ?ApiResource $resource;
 
-    public function __construct(ApiClient $apiClient, string $url, string $collectionName, array $query = [])
-    {
-        $this->client         = $apiClient;
-        $this->url            = $url;
-        $this->query          = $query;
-        $this->collectionName = $collectionName;
+    public function __construct(
+        ApiClient $apiClient,
+        private string $url,
+        private string $collectionName,
+        private array $query = [],
+    ) {
+        $this->client = $apiClient;
     }
 
     /**
@@ -49,7 +46,7 @@ class ApiPaginator implements AdapterInterface
      *
      * @see Countable::count()
      */
-    public function count($mode = null)
+    public function count($mode = null): int
     {
         if ($this->resource === null) {
             $this->resource = $this->client->get($this->url, ['query' => $this->query]);

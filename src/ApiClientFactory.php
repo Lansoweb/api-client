@@ -16,7 +16,7 @@ class ApiClientFactory
 
         return new ApiClient(
             $clientConfig['root_url'] ?? '',
-            $clientConfig
+            $clientConfig,
         );
     }
 }

@@ -9,7 +9,6 @@ use Psr\Link\LinkInterface;
 
 use function array_filter;
 use function array_reduce;
-use function get_class;
 use function gettype;
 use function in_array;
 use function is_array;
@@ -51,18 +50,12 @@ class Link implements LinkInterface
         $this->attributes  = $this->validateAttributes($attributes);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getHref()
+    public function getHref(): string
     {
         return $this->uri;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function isTemplated()
+    public function isTemplated(): bool
     {
         return $this->isTemplated;
     }
@@ -70,7 +63,7 @@ class Link implements LinkInterface
     /**
      * {@inheritDoc}
      */
-    public function getRels()
+    public function getRels(): array
     {
         return $this->relations;
     }
@@ -78,7 +71,7 @@ class Link implements LinkInterface
     /**
      * {@inheritDoc}
      */
-    public function getAttributes()
+    public function getAttributes(): array
     {
         return $this->attributes;
     }
@@ -98,7 +91,7 @@ class Link implements LinkInterface
             throw new InvalidArgumentException(sprintf(
                 '%s expects a string URI or an object implementing __toString; received %s',
                 __METHOD__,
-                is_object($href) ? get_class($href) : gettype($href)
+                is_object($href) ? $href::class : gettype($href),
             ));
         }
 
@@ -119,7 +112,7 @@ class Link implements LinkInterface
             throw new InvalidArgumentException(sprintf(
                 '%s expects a non-empty string relation type; received %s',
                 __METHOD__,
-                is_object($rel) ? get_class($rel) : gettype($rel)
+                is_object($rel) ? $rel::class : gettype($rel),
             ));
         }
 
@@ -203,7 +196,7 @@ class Link implements LinkInterface
             throw new InvalidArgumentException(sprintf(
                 '%s expects the $name argument to be a non-empty string; received %s',
                 $context,
-                is_object($name) ? get_class($name) : gettype($name)
+                is_object($name) ? $name::class : gettype($name),
             ));
         }
     }
@@ -221,7 +214,7 @@ class Link implements LinkInterface
             throw new InvalidArgumentException(sprintf(
                 '%s expects the $value to be a PHP primitive or array of strings; received %s',
                 $context,
-                is_object($value) ? get_class($value) : gettype($value)
+                is_object($value) ? $value::class : gettype($value),
             ));
         }
 
@@ -232,7 +225,7 @@ class Link implements LinkInterface
         ) {
             throw new InvalidArgumentException(sprintf(
                 '%s expects $value to contain an array of strings; one or more values was not a string',
-                $context
+                $context,
             ));
         }
     }
@@ -254,7 +247,7 @@ class Link implements LinkInterface
         if (! is_array($relation) && (! is_string($relation) || empty($relation))) {
             throw new InvalidArgumentException(sprintf(
                 '$relation argument must be a string or array of strings; received %s',
-                is_object($relation) ? get_class($relation) : gettype($relation)
+                is_object($relation) ? $relation::class : gettype($relation),
             ));
         }
 
@@ -265,7 +258,7 @@ class Link implements LinkInterface
         ) {
             throw new InvalidArgumentException(
                 'When passing an array for $relation, each value must be a non-empty string; '
-                . 'one or more non-string or empty values were present'
+                . 'one or more non-string or empty values were present',
             );
         }
 
