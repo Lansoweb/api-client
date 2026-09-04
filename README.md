@@ -1,5 +1,11 @@
 # Api-Client
 
+> [!WARNING]
+> ## Archived
+> This HAL API client is no longer maintained and will receive no further
+> releases. It remains available for existing installations; use a maintained
+> HTTP client and an explicit current API representation for new integrations.
+
 ApiClient is a php library to consume Restful APIs using Hal, like [Apigility](http://apigility.org).
 
 ## Requirements
